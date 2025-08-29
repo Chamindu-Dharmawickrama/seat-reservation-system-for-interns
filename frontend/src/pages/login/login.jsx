@@ -21,7 +21,7 @@ const Login = () => {
                 {/* Login Form */}
                 <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-white">
                     <div className="w-full max-w-sm">
-                        <h2 className="text-xl sm:text-2xl font-semibold text-center text-gray-800 mb-6 sm:mb-8">
+                        <h2 className="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-6 sm:mb-8">
                             Login
                         </h2>
                         <form className="space-y-4 sm:space-y-5">
