@@ -13,6 +13,12 @@ server.get("/",(req,res)=>{
     })
 })
 
+server.post("/login",(req,res)=>{
+    res.status(200).json({
+        message:"The server processes an incoming client request"
+    })
+})
+
 //run the server
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
