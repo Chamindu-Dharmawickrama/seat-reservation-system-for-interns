@@ -7,6 +7,7 @@ import AdminDashboard from "./pages/dashboards/admin/adminDashboard";
 import InternRegister from "./pages/register/internRegister";
 import NotFound from "./pages/error/NotFound";
 import "./App.css";
+import AdminDashboardBackup from "./pages/dashboards/admin/backup";
 
 // Lazy loading used for admin Dashboard
 const AdminOverview = lazy(() =>
@@ -26,6 +27,7 @@ const App = () => {
             <Route path="/internDashboard" element={<InternDashboard />} />
             <Route path="/signUp" element={<InternRegister />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/backup" element={<AdminDashboardBackup />} />
 
             {/* admin routes */}
             <Route path="/adminDashboard" element={<AdminDashboard />}>

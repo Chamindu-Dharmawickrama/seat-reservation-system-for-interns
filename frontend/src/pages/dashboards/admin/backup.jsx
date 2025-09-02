@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Layouts } from "../../../layouts/layouts";
 
-const AdminDashboard = () => {
+const AdminDashboardBackup = () => {
     const [activeTab, setActiveTab] = useState("overview");
     const [selectedDate, setSelectedDate] = useState(
         new Date().toISOString().split("T")[0]
@@ -922,4 +922,4 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard;
+export default AdminDashboardBackup;
