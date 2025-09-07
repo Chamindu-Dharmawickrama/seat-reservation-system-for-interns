@@ -173,6 +173,81 @@ export const fetchDashboardStats = createAsyncThunk(
     }
 );
 
+//get all register emails
+export const fetchAllRegisteredEmails = createAsyncThunk(
+    "admin/fetchAllRegisteredEmails",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get("/admin/emails");
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch emails"
+            );
+        }
+    }
+);
+
+// register new email to the system
+export const registerNewEmail = createAsyncThunk(
+    "admin/registerNewEmail",
+    async (emailData, { rejectWithValue }) => {
+        try {
+            const response = await api.post("/admin/emails", emailData);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to add email"
+            );
+        }
+    }
+);
+
+// delete registered email
+export const deleteRegisteredEmail = createAsyncThunk(
+    "admin/deleteRegisteredEmail",
+    async (emailId, { rejectWithValue }) => {
+        try {
+            await api.delete(`/admin/emails/${emailId}`);
+            return emailId;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to delete email"
+            );
+        }
+    }
+);
+
+// get the reports
+export const getReports = createAsyncThunk(
+    "admin/getReports",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get("/admin/reports");
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch reports"
+            );
+        }
+    }
+);
+
+//get quick stats
+export const getQuickStats = createAsyncThunk(
+    "admin/getQuickStats",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get("/admin/quick-stats");
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to fetch quick stats"
+            );
+        }
+    }
+);
+
 const initialState = {
     // Seats
     seats: [],
@@ -227,6 +302,22 @@ const initialState = {
     seatOperationLoading: false,
     seatOperationError: null,
     seatOperationSuccess: false,
+
+    // email operations
+    emails: [],
+    emailsLoading: false,
+    emailsError: null,
+    emailsSuccess: null,
+
+    // reports
+    reports: [],
+    reportsLoading: false,
+    reportsError: null,
+
+    // stats
+    quickStats: {},
+    quickStatsLoading: false,
+    quickStatsError: null,
 };
 
 const adminSlice = createSlice({
@@ -241,10 +332,12 @@ const adminSlice = createSlice({
             state.assignmentError = null;
             state.seatOperationError = null;
             state.deleteReservationError = null;
+            state.emailsError = null;
         },
         clearSuccess: (state) => {
             state.assignmentSuccess = false;
             state.seatOperationSuccess = false;
+            state.emailsSuccess = null;
         },
         resetSeatOperation: (state) => {
             state.seatOperationLoading = false;
@@ -255,6 +348,11 @@ const adminSlice = createSlice({
             state.assignmentLoading = false;
             state.assignmentError = null;
             state.assignmentSuccess = false;
+        },
+        resetEmailOperation: (state) => {
+            state.emailsLoading = false;
+            state.emailsError = null;
+            state.emailsSuccess = null;
         },
     },
     extraReducers: (builder) => {
@@ -434,6 +532,85 @@ const adminSlice = createSlice({
             .addCase(fetchDashboardStats.rejected, (state, action) => {
                 state.statsLoading = false;
                 state.statsError = action.payload;
+            })
+
+            // fetch Emails
+            .addCase(fetchAllRegisteredEmails.pending, (state) => {
+                state.emailsLoading = true;
+                state.emailsError = null;
+            })
+            .addCase(fetchAllRegisteredEmails.fulfilled, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsSuccess = true;
+                state.emails = action.payload;
+            })
+            .addCase(fetchAllRegisteredEmails.rejected, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsError = action.payload;
+                state.emailsSuccess = null;
+            })
+
+            // add Email
+            .addCase(registerNewEmail.pending, (state) => {
+                state.emailsLoading = true;
+                state.emailsError = null;
+                state.emailsSuccess = null;
+            })
+            .addCase(registerNewEmail.fulfilled, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsSuccess = true;
+                state.emails.push(action.payload);
+            })
+            .addCase(registerNewEmail.rejected, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsError = action.payload;
+                state.emailsSuccess = null;
+            })
+
+            // delete email
+            .addCase(deleteRegisteredEmail.pending, (state) => {
+                state.emailsLoading = true;
+                state.emailsError = null;
+            })
+            .addCase(deleteRegisteredEmail.fulfilled, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsSuccess = true;
+                state.emails = state.emails.filter(
+                    (email) => email.id !== action.payload.id
+                );
+            })
+            .addCase(deleteRegisteredEmail.rejected, (state, action) => {
+                state.emailsLoading = false;
+                state.emailsError = action.payload;
+                state.emailsSuccess = false;
+            })
+
+            // reports
+            .addCase(getReports.pending, (state) => {
+                state.reportsLoading = true;
+                state.reportsError = null;
+            })
+            .addCase(getReports.fulfilled, (state, action) => {
+                state.reportsLoading = false;
+                state.reports = action.payload;
+            })
+            .addCase(getReports.rejected, (state, action) => {
+                state.reportsLoading = false;
+                state.reportsError = action.payload;
+            })
+
+            // quick stats
+            .addCase(getQuickStats.pending, (state) => {
+                state.quickStatsLoading = true;
+                state.quickStatsError = null;
+            })
+            .addCase(getQuickStats.fulfilled, (state, action) => {
+                state.quickStatsLoading = false;
+                state.quickStats = action.payload;
+            })
+            .addCase(getQuickStats.rejected, (state, action) => {
+                state.quickStatsLoading = false;
+                state.quickStatsError = action.payload;
             });
     },
 });
@@ -443,5 +620,6 @@ export const {
     clearSuccess,
     resetSeatOperation,
     resetAssignment,
+    resetEmailOperation,
 } = adminSlice.actions;
 export default adminSlice.reducer;

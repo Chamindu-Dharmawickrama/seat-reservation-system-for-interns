@@ -1,6 +1,22 @@
 import { Download } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getQuickStats } from "../../../redux/adminSlice";
+import { Loader2 } from "lucide-react";
 
 const Reports = () => {
+    const dispatch = useDispatch();
+
+    const { quickStats, quickStatsLoading, quickStatsError } = useSelector(
+        (state) => state.admin
+    );
+
+    useEffect(() => {
+        dispatch(getQuickStats());
+    }, [dispatch]);
+
+    console.log("quickStats", quickStats);
+
     return (
         <div className="p-6 lg:p-8">
             <div>
@@ -31,36 +47,42 @@ const Reports = () => {
                         <h4 className="text-lg font-semibold text-gray-800 mb-4">
                             Quick Stats
                         </h4>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">
-                                    Peak Usage Time
-                                </span>
-                                <span className="font-semibold">
-                                    10:00 AM - 2:00 PM
-                                </span>
+                        {quickStatsLoading ? (
+                            <div className="flex justify-center items-center h-16">
+                                <Loader2 className="w-4 h-4 animate-spin" />
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">
-                                    Most Popular Floor
-                                </span>
-                                <span className="font-semibold">2nd Floor</span>
+                        ) : quickStatsError ? (
+                            <p className="text-red-500">
+                                Error: {quickStatsError}
+                            </p>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">
+                                        Peak Usage Time
+                                    </span>
+                                    <span className="font-semibold">
+                                        {quickStats.peakUsageTime}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">
+                                        Most Popular Floor
+                                    </span>
+                                    <span className="font-semibold">
+                                        {quickStats.mostPopularFloor}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">
+                                        Average Booking Duration
+                                    </span>
+                                    <span className="font-semibold">
+                                        {quickStats.averageBookingDuration}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">
-                                    Average Booking Duration
-                                </span>
-                                <span className="font-semibold">6.5 hours</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">
-                                    Utilization Rate
-                                </span>
-                                <span className="font-semibold text-[#39B54A]">
-                                    78%
-                                </span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>

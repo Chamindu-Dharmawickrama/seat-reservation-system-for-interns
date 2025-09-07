@@ -165,6 +165,24 @@ const AdminDashboard = () => {
                                 </NavLink>
 
                                 <NavLink
+                                    to="/adminDashboard/users"
+                                    className={({ isActive }) =>
+                                        `flex-1 py-3 sm:py-6 px-2 sm:px-6 font-semibold text-xs sm:text-base transition-all duration-300 relative flex items-center justify-center ${
+                                            isActive
+                                                ? "bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white shadow-lg"
+                                                : "text-gray-600 hover:text-[#0057A8] hover:bg-gray-50"
+                                        }`
+                                    }
+                                >
+                                    <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 w-full text-center">
+                                        <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        <span className="text-xs sm:text-base text-center">
+                                            Users
+                                        </span>
+                                    </div>
+                                </NavLink>
+
+                                <NavLink
                                     to="/adminDashboard/reports"
                                     className={({ isActive }) =>
                                         `flex-1 py-3 sm:py-6 px-2 sm:px-6 font-semibold text-xs sm:text-base transition-all duration-300 relative flex items-center justify-center ${

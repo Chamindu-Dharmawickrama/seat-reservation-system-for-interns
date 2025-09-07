@@ -8,6 +8,8 @@ import {
     AlertCircle,
     X,
     Loader2,
+    Mail,
+    Flag,
 } from "lucide-react";
 import {
     fetchSeats,
@@ -20,6 +22,8 @@ import {
     clearSuccess,
     resetSeatOperation,
     resetAssignment,
+    resetEmailOperation,
+    registerNewEmail,
 } from "../../../redux/adminSlice";
 import { useToast, ToastContainer } from "../../../components/Toast";
 
@@ -28,8 +32,8 @@ const AdminOverview = () => {
     const { toasts, removeToast, showSuccess, showError, showInfo } =
         useToast();
 
-    console.log(toasts)  
-    
+    console.log(toasts);
+
     // Redux state
     const {
         seats,
@@ -44,6 +48,9 @@ const AdminOverview = () => {
         assignmentLoading,
         assignmentError,
         assignmentSuccess,
+        emailsLoading,
+        emailsError,
+        emailsSuccess,
     } = useSelector((state) => state.admin);
 
     // Component state
@@ -51,6 +58,7 @@ const AdminOverview = () => {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedSeat, setSelectedSeat] = useState(null);
+    const [showRegisterEmailModal, setShowRegisterEmailModal] = useState(false);
 
     // Form states
     const [seatForm, setSeatForm] = useState({
@@ -65,6 +73,11 @@ const AdminOverview = () => {
         seatId: "",
         date: "",
         timeSlot: "09:00 AM - 05:00 PM (Full Day)",
+    });
+
+    const [emailForm, setEmailForm] = useState({
+        id: "",
+        email: "",
     });
 
     // Load initial data
@@ -154,17 +167,17 @@ const AdminOverview = () => {
         setShowSeatModal(true);
     };
 
-    const handleEditSeat = (seat) => {
-        setEditMode(true);
-        setSelectedSeat(seat);
-        setSeatForm({
-            seatNumber: seat.seatNumber,
-            floor: seat.floor,
-            location: seat.location,
-            status: seat.status,
-        });
-        setShowSeatModal(true);
-    };
+    // const handleEditSeat = (seat) => {
+    //     setEditMode(true);
+    //     setSelectedSeat(seat);
+    //     setSeatForm({
+    //         seatNumber: seat.seatNumber,
+    //         floor: seat.floor,
+    //         location: seat.location,
+    //         status: seat.status,
+    //     });
+    //     setShowSeatModal(true);
+    // };
 
     const handleSeatSubmit = (e) => {
         e.preventDefault();
@@ -197,6 +210,38 @@ const AdminOverview = () => {
         }
     };
 
+    // Handle email operation success
+    useEffect(() => {
+        if (emailsSuccess === true) {
+            showSuccess("Email added successfully!");
+            setShowRegisterEmailModal(false);
+            resetEmailForm();
+            dispatch(resetEmailOperation());
+        } else if (emailsSuccess === false) {
+            showError("Failed to add email.");
+            dispatch(resetEmailOperation());
+        }
+    }, [emailsSuccess, dispatch, showSuccess, showError]);
+
+    useEffect(() => {
+        if (emailsError) {
+            showError(emailsError);
+        }
+    }, [emailsError, showError]);
+
+    const resetEmailForm = () => {
+        setEmailForm({
+            id: "",
+            email: "",
+        });
+    };
+
+    //handle add email to the system
+    const handleRegisterEmail = (e) => {
+        e.preventDefault();
+        dispatch(registerNewEmail(emailForm));
+    };
+
     return (
         <div className="p-6 lg:p-8">
             {/* Header */}
@@ -220,7 +265,7 @@ const AdminOverview = () => {
                         <button
                             onClick={handleAddSeat}
                             disabled={seatOperationLoading}
-                            className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50"
+                            className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
                         >
                             {seatOperationLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -232,7 +277,7 @@ const AdminOverview = () => {
                         <button
                             onClick={() => setShowAssignModal(true)}
                             disabled={assignmentLoading}
-                            className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50"
+                            className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
                         >
                             {assignmentLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -240,6 +285,18 @@ const AdminOverview = () => {
                                 <Users className="w-4 h-4" />
                             )}
                             <span>Manual Seat Assignment</span>
+                        </button>
+                        <button
+                            onClick={() => setShowRegisterEmailModal(true)}
+                            //disabled={assignmentLoading}
+                            className="w-full bg-gradient-to-r from-[#2a6934] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#020703] hover:to-[#1a5367] transition-all duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+                        >
+                            {assignmentLoading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <Mail className="w-4 h-4" />
+                            )}
+                            <span>Register Email </span>
                         </button>
                     </div>
                 </div>
@@ -554,6 +611,100 @@ const AdminOverview = () => {
                                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                                     ) : null}
                                     Assign Seat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Register Email model */}
+            {showRegisterEmailModal && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#39B54A] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Mail className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                Register Email to the System
+                            </h3>
+                        </div>
+
+                        {emailsError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                                <span className="text-red-700 text-sm">
+                                    {emailsError}
+                                </span>
+                                <button
+                                    onClick={() => dispatch(clearErrors())}
+                                    className="ml-auto text-red-500 hover:text-red-700"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+
+                        <form
+                            onSubmit={handleRegisterEmail}
+                            className="space-y-6"
+                        >
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Enter Trainee ID
+                                </label>
+                                <input
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    type="text"
+                                    value={emailForm.id}
+                                    onChange={(e) =>
+                                        setEmailForm({
+                                            ...emailForm,
+                                            id: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Enter Email Address
+                                </label>
+                                <input
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    type="email"
+                                    value={emailForm.email}
+                                    onChange={(e) =>
+                                        setEmailForm({
+                                            ...emailForm,
+                                            email: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+
+                            <div className="flex space-x-4 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowRegisterEmailModal(false);
+                                        resetEmailForm();
+                                        dispatch(resetEmailOperation());
+                                    }}
+                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={emailsLoading}
+                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white rounded-lg hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center cursor-pointer"
+                                >
+                                    {emailsLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                    ) : null}
+                                    Add Email
                                 </button>
                             </div>
                         </form>

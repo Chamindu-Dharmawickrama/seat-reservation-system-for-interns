@@ -18,6 +18,7 @@ const ManageReservations = lazy(() =>
     import("./pages/dashboards/admin/manageReservations")
 );
 const Reports = lazy(() => import("./pages/dashboards/admin/reports"));
+const Users = lazy(() => import("./pages/dashboards/admin/users"));
 
 const App = () => {
     return (
@@ -70,6 +71,20 @@ const App = () => {
                             }
                         >
                             <ManageReservations />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="users"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <Users />
                         </Suspense>
                     }
                 />
