@@ -117,31 +117,31 @@ const ManageSeats = () => {
         }
     };
 
-    // // Handle success states
-    useEffect(() => {
-        if (seatOperationSuccess) {
-            setShowSeatModal(false);
-            resetSeatForm();
-            dispatch(resetSeatOperation());
-            //dispatch(fetchSeats());
-            showSuccess(
-                editMode
-                    ? "Seat updated successfully!"
-                    : "Seat added successfully!"
-            );
-        }
-    }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
+    // // // Handle success states
+    // useEffect(() => {
+    //     if (seatOperationSuccess) {
+    //         setShowSeatModal(false);
+    //         resetSeatForm();
+    //         dispatch(resetSeatOperation());
+    //         //dispatch(fetchSeats());
+    //         showSuccess(
+    //             editMode
+    //                 ? "Seat updated successfully!"
+    //                 : "Seat added successfully!"
+    //         );
+    //     }
+    // }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
 
-    // Handle error states
-    useEffect(() => {
-        if (seatOperationError) {
-            showError(seatOperationError);
-            // Clear the error after showing toast
-            setTimeout(() => {
-                dispatch(clearErrors());
-            }, 100);
-        }
-    }, [seatOperationError, showError, dispatch]);
+    // // Handle error states
+    // useEffect(() => {
+    //     if (seatOperationError) {
+    //         showError(seatOperationError);
+    //         // Clear the error after showing toast
+    //         setTimeout(() => {
+    //             dispatch(clearErrors());
+    //         }, 100);
+    //     }
+    // }, [seatOperationError, showError, dispatch]);
 
     // useEffect(() => {
     //     if (assignmentError) {
