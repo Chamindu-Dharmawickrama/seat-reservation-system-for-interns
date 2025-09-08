@@ -110,16 +110,46 @@ export const deleteReservation = createAsyncThunk(
     }
 );
 
-//fetch all interns
-export const fetchInterns = createAsyncThunk(
-    "admin/fetchInterns",
+//fetch all users
+export const fetchUsers = createAsyncThunk(
+    "admin/fetchUsers",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/interns");
+            const response = await api.get("/admin/users");
             return response.data;
         } catch (error) {
             return rejectWithValue(
-                error.response?.data?.message || "Failed to fetch interns"
+                error.response?.data?.message || "Failed to fetch users "
+            );
+        }
+    }
+);
+
+//search user
+export const searchUser = createAsyncThunk(
+    "admin/searchUser",
+    async (query, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/admin/users/search?query=${query}`);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to search users"
+            );
+        }
+    }
+);
+
+//delete user
+export const deleteUser = createAsyncThunk(
+    "admin/deleteUser",
+    async (userId, { rejectWithValue }) => {
+        try {
+            await api.delete(`/admin/users/${userId}`);
+            return userId;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to delete user"
             );
         }
     }
@@ -254,10 +284,10 @@ const initialState = {
     seatsLoading: false,
     seatsError: null,
 
-    // Interns
-    interns: [],
-    internsLoading: false,
-    internsError: null,
+    //user
+    users: [],
+    usersLoading: false,
+    usersError: null,
 
     //reservations
     reservations: [],
@@ -423,18 +453,47 @@ const adminSlice = createSlice({
                 state.seatOperationError = action.payload;
             })
 
-            // Fetch Interns
-            .addCase(fetchInterns.pending, (state) => {
-                state.internsLoading = true;
-                state.internsError = null;
+            // Fetch Users
+            .addCase(fetchUsers.pending, (state) => {
+                state.usersLoading = true;
+                state.usersError = null;
             })
-            .addCase(fetchInterns.fulfilled, (state, action) => {
-                state.internsLoading = false;
-                state.interns = action.payload;
+            .addCase(fetchUsers.fulfilled, (state, action) => {
+                state.usersLoading = false;
+                state.users = action.payload;
             })
-            .addCase(fetchInterns.rejected, (state, action) => {
-                state.internsLoading = false;
-                state.internsError = action.payload;
+            .addCase(fetchUsers.rejected, (state, action) => {
+                state.usersLoading = false;
+                state.usersError = action.payload;
+            })
+
+            // Search User
+            .addCase(searchUser.pending, (state) => {
+                state.usersLoading = true;
+                state.usersError = null;
+            })
+            .addCase(searchUser.fulfilled, (state, action) => {
+                state.usersLoading = false;
+                state.users = action.payload;
+            })
+            .addCase(searchUser.rejected, (state, action) => {
+                state.usersLoading = false;
+                state.usersError = action.payload;
+            })
+
+            //delete user
+            .addCase(deleteUser.pending, (state) => {
+                state.usersLoading = true;
+                state.usersError = null;
+            })
+            .addCase(deleteUser.fulfilled, (state, action) => {
+                state.usersLoading = false;
+                state.usersSuccess = true;
+                state.users = state.users.filter((user) => user.id !== action.payload);
+            })
+            .addCase(deleteUser.rejected, (state, action) => {
+                state.usersLoading = false;
+                state.usersError = action.payload;
             })
 
             // Fetch Reservations

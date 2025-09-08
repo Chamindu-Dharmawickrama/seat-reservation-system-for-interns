@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import {
     fetchSeats,
-    fetchInterns,
     fetchRecentActivities,
     addSeat,
     updateSeat,
@@ -24,6 +23,7 @@ import {
     resetAssignment,
     resetEmailOperation,
     registerNewEmail,
+    fetchUsers,
 } from "../../../redux/adminSlice";
 import { useToast, ToastContainer } from "../../../components/Toast";
 
@@ -83,7 +83,7 @@ const AdminOverview = () => {
     // Load initial data
     useEffect(() => {
         dispatch(fetchSeats());
-        dispatch(fetchInterns());
+        dispatch(fetchUsers());
         dispatch(fetchRecentActivities());
     }, [dispatch]);
 

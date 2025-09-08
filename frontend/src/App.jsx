@@ -19,6 +19,10 @@ const ManageReservations = lazy(() =>
 );
 const Reports = lazy(() => import("./pages/dashboards/admin/reports"));
 const Users = lazy(() => import("./pages/dashboards/admin/users"));
+const AllUsers = lazy(() => import("./pages/dashboards/admin/allUsers"));
+const RegisteredEmails = lazy(() =>
+    import("./pages/dashboards/admin/registeredEmails")
+);
 
 const App = () => {
     return (
@@ -74,6 +78,7 @@ const App = () => {
                         </Suspense>
                     }
                 />
+                {/* User Routes */}
                 <Route
                     path="users"
                     element={
@@ -87,7 +92,37 @@ const App = () => {
                             <Users />
                         </Suspense>
                     }
-                />
+                >
+                    {/* Nested routes */}
+                    <Route
+                        index
+                        element={
+                            <Suspense
+                                fallback={
+                                    <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                        <div className="loader"></div>
+                                    </div>
+                                }
+                            >
+                                <AllUsers />
+                            </Suspense>
+                        }
+                    />
+                    <Route
+                        path="registerdEmails"
+                        element={
+                            <Suspense
+                                fallback={
+                                    <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                        <div className="loader"></div>
+                                    </div>
+                                }
+                            >
+                                <RegisteredEmails />
+                            </Suspense>
+                        }
+                    />
+                </Route>
                 <Route
                     path="reports"
                     element={
