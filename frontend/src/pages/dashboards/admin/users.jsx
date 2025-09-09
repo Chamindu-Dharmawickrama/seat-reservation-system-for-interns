@@ -4,8 +4,8 @@ import { NavLink, Outlet } from "react-router-dom";
 const Users = () => {
     return (
         <div className="p-4 lg:p-8 min-h-screen">
-            <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr] border border-gray-300 h-full min-h-[70vh]">
-                <nav className="bg-gray-100 border-b lg:border-b-0 lg:border-r border-gray-300 p-4 lg:p-6 flex flex-row lg:flex-col gap-4 lg:gap-6">
+            <div className="flex flex-col lg:grid lg:grid-cols-[200px_1fr] border border-gray-400/60 h-full min-h-[70vh]">
+                <nav className="bg-gray-100 border-b lg:border-b-0 lg:border-r border-gray-400/60 p-4 lg:p-6 flex flex-row lg:flex-col gap-4 lg:gap-6">
                     <NavLink
                         to="."
                         end

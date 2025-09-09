@@ -38,10 +38,11 @@ const AdminOverview = () => {
     const {
         seats,
         seatsLoading,
-        interns,
-        internsLoading,
+        users,
+        usersLoading,
         recentActivities,
         activitiesLoading,
+        activitiesError,
         seatOperationLoading,
         seatOperationError,
         seatOperationSuccess,
@@ -223,11 +224,12 @@ const AdminOverview = () => {
         }
     }, [emailsSuccess, dispatch, showSuccess, showError]);
 
-    useEffect(() => {
-        if (emailsError) {
-            showError(emailsError);
-        }
-    }, [emailsError, showError]);
+    //fix this
+    // useEffect(() => {
+    //     if (emailsError) {
+    //         showError(emailsError);
+    //     }
+    // }, [emailsError, showError]);
 
     const resetEmailForm = () => {
         setEmailForm({
@@ -311,6 +313,10 @@ const AdminOverview = () => {
                             <div className="flex items-center justify-center py-4">
                                 <Loader2 className="w-6 h-6 animate-spin" />
                             </div>
+                        ) : activitiesError ? (
+                            <p className="text-red-500">
+                                Error: {activitiesError}
+                            </p>
                         ) : recentActivities.length > 0 ? (
                             recentActivities
                                 .slice(0, 5)
@@ -509,18 +515,17 @@ const AdminOverview = () => {
                                     className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
                                 >
                                     <option value="">Choose an intern</option>
-                                    {internsLoading ? (
+                                    {usersLoading ? (
                                         <option disabled>
                                             Loading interns...
                                         </option>
                                     ) : (
-                                        interns.map((intern) => (
+                                        users.map((user) => (
                                             <option
-                                                key={intern.id}
-                                                value={intern.id}
+                                                key={user.id}
+                                                value={user.id}
                                             >
-                                                {intern.name} ({intern.internId}
-                                                )
+                                                {user.name} ({user.internId})
                                             </option>
                                         ))
                                     )}

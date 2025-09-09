@@ -18,6 +18,23 @@ export const fetchSeats = createAsyncThunk(
     }
 );
 
+//search seat by search term and if there any filters apply search by it also
+export const searchSeatByTerm = createAsyncThunk(
+    "admin/searchSeatByTerm",
+    async ({ searchTerm, status }, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/admin/seats/search`, {
+                params: { seatNumber: searchTerm, status },
+            });
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || "Failed to search seat"
+            );
+        }
+    }
+);
+
 //add new seat
 export const addSeat = createAsyncThunk(
     "admin/addSeat",
@@ -78,18 +95,18 @@ export const fetchReservations = createAsyncThunk(
     }
 );
 
-//fetch reservations by id
-export const fetchReservationById = createAsyncThunk(
-    "admin/fetchReservationById",
-    async (reservationId, { rejectWithValue }) => {
+// search reservations by term or using date filter
+export const searchReservations = createAsyncThunk(
+    "admin/searchReservations",
+    async ({ searchTerm, date }, { rejectWithValue }) => {
         try {
-            const response = await api.get(
-                `/admin/reservations/${reservationId}`
-            );
+            const response = await api.get("/admin/reservations/search", {
+                params: { searchTerm, date },
+            });
             return response.data;
         } catch (error) {
             return rejectWithValue(
-                error.response?.data?.message || "Failed to fetch reservation"
+                error.response?.data?.message || "Failed to search reservations"
             );
         }
     }
@@ -130,7 +147,9 @@ export const searchUser = createAsyncThunk(
     "admin/searchUser",
     async (query, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/admin/users/search?query=${query}`);
+            const response = await api.get(
+                `/admin/users/search?query=${query}`
+            );
             return response.data;
         } catch (error) {
             return rejectWithValue(
@@ -401,6 +420,20 @@ const adminSlice = createSlice({
                 state.seatsError = action.payload;
             })
 
+            // search seats
+            .addCase(searchSeatByTerm.pending, (state) => {
+                state.seatsLoading = true;
+                state.seatsError = null;
+            })
+            .addCase(searchSeatByTerm.fulfilled, (state, action) => {
+                state.seatsLoading = false;
+                state.seats = action.payload;
+            })
+            .addCase(searchSeatByTerm.rejected, (state, action) => {
+                state.seatsLoading = false;
+                state.seatsError = action.payload;
+            })
+
             // Add Seat
             .addCase(addSeat.pending, (state) => {
                 state.seatOperationLoading = true;
@@ -489,7 +522,9 @@ const adminSlice = createSlice({
             .addCase(deleteUser.fulfilled, (state, action) => {
                 state.usersLoading = false;
                 state.usersSuccess = true;
-                state.users = state.users.filter((user) => user.id !== action.payload);
+                state.users = state.users.filter(
+                    (user) => user.id !== action.payload
+                );
             })
             .addCase(deleteUser.rejected, (state, action) => {
                 state.usersLoading = false;
@@ -512,18 +547,18 @@ const adminSlice = createSlice({
                 state.reservationsError = action.payload;
             })
 
-            // Fetch Reservation by ID
-            .addCase(fetchReservationById.pending, (state) => {
-                state.selectedReservationLoading = true;
-                state.selectedReservationError = null;
+            //search reservation
+            .addCase(searchReservations.pending, (state) => {
+                state.reservationsLoading = true;
+                state.reservationsError = null;
             })
-            .addCase(fetchReservationById.fulfilled, (state, action) => {
-                state.selectedReservationLoading = false;
-                state.selectedReservation = action.payload;
+            .addCase(searchReservations.fulfilled, (state, action) => {
+                state.reservationsLoading = false;
+                state.reservations = action.payload;
             })
-            .addCase(fetchReservationById.rejected, (state, action) => {
-                state.selectedReservationLoading = false;
-                state.selectedReservationError = action.payload;
+            .addCase(searchReservations.rejected, (state, action) => {
+                state.reservationsLoading = false;
+                state.reservationsError = action.payload;
             })
 
             // Delete Reservation

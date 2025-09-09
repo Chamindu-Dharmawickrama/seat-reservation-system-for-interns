@@ -20,6 +20,7 @@ import {
     fetchSeats,
     clearErrors,
     deleteSeat,
+    searchSeatByTerm,
 } from "../../../redux/adminSlice";
 import { useToast, ToastContainer } from "../../../components/Toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,7 +39,7 @@ const ManageSeats = () => {
 
     // get the seat adding state
     const {
-        //seats,
+        seats,
         seatsLoading,
         seatsError,
         seatOperationLoading,
@@ -47,28 +48,30 @@ const ManageSeats = () => {
     } = useSelector((state) => state.admin);
 
     //mock data
-    const seats = [
-        {
-            id: 1,
-            seatNumber: "A1",
-            floor: 1,
-            location: "Near window",
-            status: "available",
-        },
-        {
-            id: 2,
-            seatNumber: "A2",
-            floor: 1,
-            location: "Near door",
-            status: "booked",
-        },
-    ];
+    // const seats = [
+    //     {
+    //         id: 1,
+    //         seatNumber: "A1",
+    //         floor: 1,
+    //         location: "Near window",
+    //         status: "available",
+    //     },
+    //     {
+    //         id: 2,
+    //         seatNumber: "A2",
+    //         floor: 1,
+    //         location: "Near door",
+    //         status: "booked",
+    //     },
+    // ];
 
     const [showSeatModal, setShowSeatModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedSeat, setSelectedSeat] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteSeatInfo, setDeleteSeatInfo] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [status, setStatus] = useState("all");
 
     // seat adding form states
     const [seatForm, setSeatForm] = useState({
@@ -149,10 +152,10 @@ const ManageSeats = () => {
     //     }
     // }, [assignmentError, showError]);
 
-    // // fetch seats
-    // useEffect(() => {
-    //     dispatch(fetchSeats());
-    // }, [dispatch]);
+    // fetch seats
+    useEffect(() => {
+        dispatch(fetchSeats());
+    }, [dispatch]);
 
     // Get seat status class
     const getSeatStatusClass = (status) => {
@@ -175,6 +178,12 @@ const ManageSeats = () => {
         setDeleteSeatInfo(null);
     };
 
+    console.log("search term", searchTerm);
+
+    useEffect(() => {
+        dispatch(searchSeatByTerm({ searchTerm, status }));
+    }, [searchTerm, status, dispatch]);
+
     return (
         <div className="p-6 lg:p-8">
             <div>
@@ -184,14 +193,17 @@ const ManageSeats = () => {
                             <Search className="w-5 h-5 absolute left-3 top-3 mt-1 ml-1 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search seats..."
+                                placeholder="Search seats by seat number..."
                                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchTerm}
                             />
                         </div>
                     </div>
                     <select
-                        value="all"
                         className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                        onChange={(e) => setStatus(e.target.value)}
+                        value={status}
                     >
                         <option value="all">All Status</option>
                         <option value="available">Available</option>
@@ -209,7 +221,7 @@ const ManageSeats = () => {
 
                 {/* Seats Grid */}
                 {seatsLoading ? (
-                    <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-4 rounded-xl shadow-md animate-pulse">
+                    <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8 shadow-md animate-pulse">
                         <svg
                             className="w-5 h-5 mr-2 animate-spin"
                             fill="none"
@@ -234,7 +246,10 @@ const ManageSeats = () => {
                         <span className="font-semibold">Loading Seats...</span>
                     </div>
                 ) : seatsError ? (
-                    <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm">
+                    <div
+                        className="flex items-center justify-between bg-red-50 border border-red-50 text-red-700 px-4 py-8
+                     shadow-sm"
+                    >
                         <div className="flex items-center space-x-2">
                             <svg
                                 className="w-5 h-5 text-red-500"

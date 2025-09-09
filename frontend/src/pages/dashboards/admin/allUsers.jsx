@@ -31,6 +31,9 @@ const AllUsers = () => {
     //     },
     // ];
 
+    // const usersLoading = false;
+    // const usersError = false;
+
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -42,9 +45,9 @@ const AllUsers = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#f3f4f6] to-[#e0e7ef] py-8 px-4">
+        <div className="min-h-screen  py-8 px-4">
             {usersLoading ? (
-                <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8 rounded-xl shadow-md animate-pulse">
+                <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8  shadow-md animate-pulse">
                     <svg
                         className="w-5 h-5 mr-2 animate-spin"
                         fill="none"
@@ -69,7 +72,7 @@ const AllUsers = () => {
                     <span className="font-semibold">Loading Users...</span>
                 </div>
             ) : usersError ? (
-                <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-700 px-4 py-8 rounded-xl shadow-sm">
+                <div className="flex items-center justify-between bg-red-50 border border-red-50 text-red-700 px-4 py-8 shadow-sm">
                     <div className="flex items-center space-x-2">
                         <svg
                             className="w-5 h-5 text-red-500"

@@ -63,7 +63,7 @@ const Home = () => {
                                         </Link>
                                         <Link
                                             to="/signUp"
-                                            className="inline-flex items-center justify-center px-8 py-3 sm:py-4text-lg font-medium text-mainBlue bg-white border-2 border-mainBlue rounded-xl hover:bg-blue-50 hover:border-blue-900 transition-all duration-200 shadow-md hover:shadow-lg"
+                                            className="inline-flex items-center justify-center px-8 py-3 sm:py-4text-lg font-medium text-mainBlue bg-white  rounded-xl hover:bg-blue-50 hover:border-blue-900 transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             Create Account
                                         </Link>

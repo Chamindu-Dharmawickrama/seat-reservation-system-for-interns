@@ -14,6 +14,7 @@ import {
     fetchReservations,
     deleteReservation,
     clearErrors,
+    searchReservations,
 } from "../../../redux/adminSlice";
 
 const ManageReservations = () => {
@@ -22,10 +23,11 @@ const ManageReservations = () => {
     const [selectedDate, setSelectedDate] = useState(
         new Date().toISOString().split("T")[0]
     );
+    const [searchTerm, setSearchTerm] = useState("");
 
     //get the state from the redux store
     const {
-        //reservations,
+        reservations,
         reservationsLoading,
         reservationsError,
         reservationsSuccess,
@@ -46,50 +48,50 @@ const ManageReservations = () => {
     console.log("Error delete reservation ", deleteReservationError);
 
     // Mock data
-    const reservations = [
-        {
-            id: 1,
-            seatNumber: "A01",
-            internName: "John Doe",
-            internId: "INT001",
-            date: "2025-08-28",
-            time: "09:00 AM - 05:00 PM",
-            status: "active",
-            floor: "1st Floor",
-            purpose: "Project Work",
-        },
-        {
-            id: 2,
-            seatNumber: "B02",
-            internName: "Jane Smith",
-            internId: "INT002",
-            date: "2025-08-29",
-            time: "09:00 AM - 01:00 PM",
-            status: "upcoming",
-            floor: "2nd Floor",
-            purpose: "Meeting Preparation",
-        },
-        {
-            id: 3,
-            seatNumber: "A03",
-            internName: "Mike Johnson",
-            internId: "INT003",
-            date: "2025-08-25",
-            time: "01:00 PM - 05:00 PM",
-            status: "completed",
-            floor: "1st Floor",
-            purpose: "Training Session",
-        },
-    ];
+    // const reservations = [
+    //     {
+    //         id: 1,
+    //         seatNumber: "A01",
+    //         internName: "John Doe",
+    //         internId: "INT001",
+    //         date: "2025-08-28",
+    //         time: "09:00 AM - 05:00 PM",
+    //         status: "active",
+    //         floor: "1st Floor",
+    //         purpose: "Project Work",
+    //     },
+    //     {
+    //         id: 2,
+    //         seatNumber: "B02",
+    //         internName: "Jane Smith",
+    //         internId: "INT002",
+    //         date: "2025-08-29",
+    //         time: "09:00 AM - 01:00 PM",
+    //         status: "upcoming",
+    //         floor: "2nd Floor",
+    //         purpose: "Meeting Preparation",
+    //     },
+    //     {
+    //         id: 3,
+    //         seatNumber: "A03",
+    //         internName: "Mike Johnson",
+    //         internId: "INT003",
+    //         date: "2025-08-25",
+    //         time: "01:00 PM - 05:00 PM",
+    //         status: "completed",
+    //         floor: "1st Floor",
+    //         purpose: "Training Session",
+    //     },
+    // ];
 
     // // fetch the all reservations
-    // useEffect(() => {
-    //     try {
-    //         dispatch(fetchReservations());
-    //     } catch (error) {
-    //         setFetchError(error.message);
-    //     }
-    // }, [dispatch]);
+    useEffect(() => {
+        try {
+            dispatch(fetchReservations());
+        } catch (error) {
+            setFetchError(error.message);
+        }
+    }, [dispatch]);
 
     // for getting reservation status color
     const getReservationStatusColor = (status) => {
@@ -131,6 +133,13 @@ const ManageReservations = () => {
         dispatch,
     ]);
 
+    //search
+    useEffect(() => {
+        if (searchTerm) {
+            dispatch(searchReservations({ searchTerm, selectedDate }));
+        }
+    }, [searchTerm, selectedDate, dispatch]);
+
     return (
         <div className="p-6 lg:p-8">
             <div>
@@ -156,6 +165,8 @@ const ManageReservations = () => {
                                 type="text"
                                 placeholder="Search by intern name or ID..."
                                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchTerm}
                             />
                         </div>
                     </div>
@@ -164,7 +175,7 @@ const ManageReservations = () => {
                 {/* Reservations List */}
                 <div className="space-y-4">
                     {reservationsError ? (
-                        <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm">
+                        <div className="flex items-center justify-between bg-red-50 border border-red-50 text-red-700 px-4 py-8 shadow-sm">
                             <div className="flex items-center space-x-2">
                                 <svg
                                     className="w-5 h-5 text-red-500"
@@ -185,7 +196,7 @@ const ManageReservations = () => {
                             </div>
                         </div>
                     ) : reservationsLoading ? (
-                        <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-4 rounded-xl shadow-md animate-pulse">
+                        <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8 shadow-md animate-pulse">
                             <svg
                                 className="w-5 h-5 mr-2 animate-spin"
                                 fill="none"

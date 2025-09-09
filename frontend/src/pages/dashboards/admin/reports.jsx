@@ -29,15 +29,15 @@ const Reports = () => {
                             Generate Reports
                         </h4>
                         <div className="space-y-4">
-                            <button className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2">
+                            <button className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer">
                                 <Download className="w-4 h-4" />
                                 <span>Daily Usage Report</span>
                             </button>
-                            <button className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2">
+                            <button className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer">
                                 <Download className="w-4 h-4" />
                                 <span>Weekly Summary</span>
                             </button>
-                            <button className="w-full bg-gradient-to-r from-[#00B5E2] to-[#39B54A] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#0099CC] hover:to-[#2d8f3f] transition-all duration-300 flex items-center justify-center space-x-2">
+                            <button className="w-full bg-gradient-to-r from-[#00B5E2] to-[#39B54A] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#0099CC] hover:to-[#2d8f3f] transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer">
                                 <Download className="w-4 h-4" />
                                 <span>Monthly Analytics</span>
                             </button>
