@@ -135,10 +135,10 @@ const ManageReservations = () => {
 
     //search
     useEffect(() => {
-        if (searchTerm) {
-            dispatch(searchReservations({ searchTerm, selectedDate }));
-        }
+        dispatch(searchReservations({ searchTerm, selectedDate }));
     }, [searchTerm, selectedDate, dispatch]);
+
+    console.log("date", selectedDate);
 
     return (
         <div className="p-6 lg:p-8">
