@@ -1,19 +1,40 @@
 import express from "express";
 import dotenv from "dotenv";
+import { connectDatabase } from "./src/config/db.js";
+import DB from "./src/config/db.js";
 
 dotenv.config();
 
 const server = express();
-
 const PORT = process.env.PORT || 4000;
 
-server.get("/",(req,res)=>{
-    res.status(200).json({
-        message:"The server processes an incoming client request"
-    })
-})
+server.use(express.json());
 
+<<<<<<< Updated upstream
 //run the server
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+=======
+//helath check
+server.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "Seat Reservation System API is running",
+        timestamp: new Date().toString(),
+        // app's environment (e.g., 'development', 'production')
+        environment: process.env.NODE_ENV,
+    });
+>>>>>>> Stashed changes
 });
+
+
+// Start server
+const startServer = async () => {
+    await connectDatabase();
+
+    server.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+};
+
+startServer();
