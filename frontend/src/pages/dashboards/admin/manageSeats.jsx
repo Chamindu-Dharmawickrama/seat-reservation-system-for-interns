@@ -45,7 +45,12 @@ const ManageSeats = () => {
         seatOperationLoading,
         seatOperationError,
         seatOperationSuccess,
+        assignmentError,
+        deleteSuccess,
+        deleteError
     } = useSelector((state) => state.admin);
+
+    console.log("seats",seats)
 
     //mock data
     // const seats = [
@@ -78,7 +83,7 @@ const ManageSeats = () => {
         seatNumber: "",
         floor: "",
         location: "",
-        status: "available",
+        status: "AVAILABLE",
     });
 
     // change the vlaue of the setSeatForm useState
@@ -95,7 +100,7 @@ const ManageSeats = () => {
             seatNumber: "",
             floor: "",
             location: "",
-            status: "available",
+            status: "AVAILABLE",
         });
         setSelectedSeat(null);
         setEditMode(false);
@@ -120,42 +125,42 @@ const ManageSeats = () => {
         }
     };
 
-    // // // Handle success states
-    // useEffect(() => {
-    //     if (seatOperationSuccess) {
-    //         setShowSeatModal(false);
-    //         resetSeatForm();
-    //         dispatch(resetSeatOperation());
-    //         //dispatch(fetchSeats());
-    //         showSuccess(
-    //             editMode
-    //                 ? "Seat updated successfully!"
-    //                 : "Seat added successfully!"
-    //         );
-    //     }
-    // }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
+    // // Handle success states
+    useEffect(() => {
+        if (seatOperationSuccess) {
+            setShowSeatModal(false);
+            resetSeatForm();
+            dispatch(resetSeatOperation());
+            //dispatch(fetchSeats());
+            showSuccess(
+                editMode
+                    ? "Seat updated successfully!"
+                    : "Seat added successfully!"
+            );
+        }
+    }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
 
-    // // Handle error states
-    // useEffect(() => {
-    //     if (seatOperationError) {
-    //         showError(seatOperationError);
-    //         // Clear the error after showing toast
-    //         setTimeout(() => {
-    //             dispatch(clearErrors());
-    //         }, 100);
-    //     }
-    // }, [seatOperationError, showError, dispatch]);
+    // Handle error states
+    useEffect(() => {
+        if (seatOperationError) {
+            showError(seatOperationError);
+            // Clear the error after showing toast
+            // setTimeout(() => {
+            //     dispatch(clearErrors());
+            // }, 100);
+        }
+    }, [seatOperationError, showError, dispatch]);
 
-    // useEffect(() => {
-    //     if (assignmentError) {
-    //         showError(assignmentError);
-    //     }
-    // }, [assignmentError, showError]);
+    useEffect(() => {
+        if (assignmentError) {
+            showError(assignmentError);
+        }
+    }, [assignmentError, showError]);
 
     // fetch seats
     useEffect(() => {
         dispatch(fetchSeats());
-    }, [dispatch]);
+    }, [dispatch,seatOperationSuccess]);
 
     // Get seat status class
     const getSeatStatusClass = (status) => {
@@ -178,11 +183,29 @@ const ManageSeats = () => {
         setDeleteSeatInfo(null);
     };
 
+    // handle succes delete state 
+    useEffect(()=>{
+        if(deleteSuccess){
+            showSuccess("Seat deleted successfully!")
+        }
+    },[deleteSuccess])
+
+    // handle Error delete state 
+    useEffect(()=>{
+        if(deleteError){
+            showSuccess("Seat deleted not successfully!")
+        }
+    },[deleteError])
+
+    
+
     console.log("search term", searchTerm);
 
     useEffect(() => {
-        dispatch(searchSeatByTerm({ searchTerm, status }));
-    }, [searchTerm, status, dispatch]);
+        if (searchTerm){
+            dispatch(searchSeatByTerm({ searchTerm, status }));
+        }
+    }, [searchTerm, status]);
 
     return (
         <div className="p-6 lg:p-8">
@@ -206,8 +229,8 @@ const ManageSeats = () => {
                         value={status}
                     >
                         <option value="all">All Status</option>
-                        <option value="available">Available</option>
-                        <option value="occupied">Occupied</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="OCCUPIED">Occupied</option>
                         <option value="maintenance">Maintenance</option>
                     </select>
                     <button
@@ -418,11 +441,11 @@ const ManageSeats = () => {
                                     onChange={handleSeatFormChange}
                                     className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
                                 >
-                                    <option value="available">Available</option>
-                                    <option value="maintenance">
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="MAINTENANCE">
                                         Maintenance
                                     </option>
-                                    <option value="occupied">Occupied</option>
+                                    <option value="OCCUPIED">Occupied</option>
                                 </select>
                             </div>
                             <div className="flex space-x-4 mt-8">

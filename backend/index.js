@@ -3,13 +3,23 @@ import dotenv from "dotenv";
 import { connectDatabase } from "./src/config/db.js";
 import DB from "./src/config/db.js";
 import rootRouter from "./src/routes/rootRouter.js";
+import cors from "cors";
 
 dotenv.config();
 
 const server = express();
 const PORT = process.env.PORT || 4000;
 
+// handles JSON request bodies
 server.use(express.json());
+
+// CORS middleware
+server.use(
+    cors({
+        origin: process.env.CLIENT_URL,
+        credentials: true,
+    })
+);
 
 // use rootRouter
 server.use("/api", rootRouter);

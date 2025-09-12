@@ -8,8 +8,8 @@ export const fetchSeats = createAsyncThunk(
     "admin/fetchSeats",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/seats");
-            return response.data;
+            const response = await api.get("/seats");
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch seats"
@@ -23,10 +23,11 @@ export const searchSeatByTerm = createAsyncThunk(
     "admin/searchSeatByTerm",
     async ({ searchTerm, status }, { rejectWithValue }) => {
         try {
-            const response = await api.get(`/admin/seats/search`, {
+            const response = await api.get(`/seats/searchSeat`, {
                 params: { seatNumber: searchTerm, status },
             });
-            return response.data;
+            console.log(response.data.data)
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to search seat"
@@ -40,7 +41,7 @@ export const addSeat = createAsyncThunk(
     "admin/addSeat",
     async (seatData, { rejectWithValue }) => {
         try {
-            const response = await api.post("/admin/seats", seatData);
+            const response = await api.post("/seats/addSeat", seatData);
             return response.data;
         } catch (error) {
             return rejectWithValue(
@@ -70,7 +71,7 @@ export const deleteSeat = createAsyncThunk(
     "admin/deleteSeat",
     async (seatId, { rejectWithValue }) => {
         try {
-            await api.delete(`/admin/seats/${seatId}`);
+            await api.delete(`/seats/delete/${seatId}`);
             return seatId;
         } catch (error) {
             return rejectWithValue(
@@ -303,6 +304,11 @@ const initialState = {
     seatsLoading: false,
     seatsError: null,
 
+    //delete seat
+    deletingSeat: false,
+    deleteSeatError: null,
+    deleteSuccess: false,
+
     //user
     users: [],
     usersLoading: false,
@@ -471,19 +477,19 @@ const adminSlice = createSlice({
 
             // Delete Seat
             .addCase(deleteSeat.pending, (state) => {
-                state.seatOperationLoading = true;
-                state.seatOperationError = null;
+                state.deletingSeat = true;
+                state.deleteSeatError = null;
             })
             .addCase(deleteSeat.fulfilled, (state, action) => {
-                state.seatOperationLoading = false;
-                state.seatOperationSuccess = true;
+                state.deletingSeat = false;
+                state.deleteSuccess = true;
                 state.seats = state.seats.filter(
                     (seat) => seat.id !== action.payload
                 );
             })
             .addCase(deleteSeat.rejected, (state, action) => {
-                state.seatOperationLoading = false;
-                state.seatOperationError = action.payload;
+                state.deletingSeat = false;
+                state.deleteSeatError = action.payload;
             })
 
             // Fetch Users
