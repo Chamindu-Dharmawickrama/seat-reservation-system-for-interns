@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  username    String   @unique
+  password    String
+  role        Role     @default(INTERN)
+  internId    String?  @unique
+  department  String?
+  university  String?
+  startDate   DateTime?
+  endDate     DateTime?
+  // isActive acts as a status flag to enable/disable user accounts without deleting them
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  //Relations
+  reservations Reservation[]
+
+  @@map("users")
+}
+
+// enumerated type — a fixed set of string-like values. - It restricts a column to only accept one of the predefined values.
+enum Role{
+  INTERN
+  ADMIN
+}
+
+model AllowedEmail {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("allowed_emails")
+}
+
+model Seat {
+  id          String   @id @default(cuid())
+  seatNumber  String   @unique
+  floor       String
+  location    String?
+  status      SeatStatus @default(AVAILABLE)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  //Relations
+  reservations Reservation[]
+
+  @@map("seats")
+}
+
+enum SeatStatus {
+  AVAILABLE
+  OCCUPIED
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+model Reservation {
+  id         String   @id @default(cuid())
+  userId     String
+  seatId     String
+  date       DateTime
+  startTime  DateTime
+  endTime    DateTime
+  status     ReservationStatus @default(ACTIVE)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // make realtions with user and seats
+  user User @relation(fields: [userId], references: [id])
+  seat Seat @relation(fields: [seatId], references: [id])
+
+  @@unique([seatId, date, startTime, endTime])
+  @@map("reservations")
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
