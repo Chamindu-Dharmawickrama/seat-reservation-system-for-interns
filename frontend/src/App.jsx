@@ -1,35 +1,145 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { lazy, Suspense } from "react";
+import Home from "./pages/home/home";
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/login/login";
+import InternDashboard from "./pages/dashboards/intern/internDashboard";
+import AdminDashboard from "./pages/dashboards/admin/adminDashboard";
+import InternRegister from "./pages/register/internRegister";
+import NotFound from "./pages/error/NotFound";
+import "./App.css";
+import AdminDashboardBackup from "./pages/dashboards/admin/backup";
 
-function App() {
-  const [count, setCount] = useState(0)
+// Lazy loading used for admin Dashboard
+const AdminOverview = lazy(() =>
+    import("./pages/dashboards/admin/adminOverview")
+);
+const ManageSeats = lazy(() => import("./pages/dashboards/admin/manageSeats"));
+const ManageReservations = lazy(() =>
+    import("./pages/dashboards/admin/manageReservations")
+);
+const Reports = lazy(() => import("./pages/dashboards/admin/reports"));
+const Users = lazy(() => import("./pages/dashboards/admin/users"));
+const AllUsers = lazy(() => import("./pages/dashboards/admin/allUsers"));
+const RegisteredEmails = lazy(() =>
+    import("./pages/dashboards/admin/registeredEmails")
+);
 
-  return (
-    <>
-      <div>
-        <a className='' href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+const App = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/internDashboard" element={<InternDashboard />} />
+            <Route path="/signUp" element={<InternRegister />} />
+            <Route path="*" element={<NotFound />} />
+            <Route path="/backup" element={<AdminDashboardBackup />} />
 
-export default App
+            {/* admin routes */}
+            <Route path="/adminDashboard" element={<AdminDashboard />}>
+                <Route
+                    index
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <AdminOverview />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="manageSeats"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <ManageSeats />
+                        </Suspense>
+                    }
+                />
+                <Route
+                    path="manageReservations"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <ManageReservations />
+                        </Suspense>
+                    }
+                />
+                {/* User Routes */}
+                <Route
+                    path="users"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <Users />
+                        </Suspense>
+                    }
+                >
+                    {/* Nested routes */}
+                    <Route
+                        index
+                        element={
+                            <Suspense
+                                fallback={
+                                    <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                        <div className="loader"></div>
+                                    </div>
+                                }
+                            >
+                                <AllUsers />
+                            </Suspense>
+                        }
+                    />
+                    <Route
+                        path="registerdEmails"
+                        element={
+                            <Suspense
+                                fallback={
+                                    <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                        <div className="loader"></div>
+                                    </div>
+                                }
+                            >
+                                <RegisteredEmails />
+                            </Suspense>
+                        }
+                    />
+                </Route>
+                <Route
+                    path="reports"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <Reports />
+                        </Suspense>
+                    }
+                />
+            </Route>
+        </Routes>
+    );
+};
+
+export default App;

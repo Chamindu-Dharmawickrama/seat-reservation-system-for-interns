@@ -11,17 +11,6 @@ const PORT = process.env.PORT || 4000;
 server.use(express.json());
   
 
-//helath check
-server.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "OK",
-        message: "Seat Reservation System API is running",
-        timestamp: new Date().toString(),
-        // app's environment (e.g., 'development', 'production')
-        environment: process.env.NODE_ENV,
-    });
-
-});
 
 
 // Start server
