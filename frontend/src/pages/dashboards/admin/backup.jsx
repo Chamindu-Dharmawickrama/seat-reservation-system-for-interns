@@ -1,925 +1,667 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import {
-    Calendar,
     MapPin,
-    Clock,
     User,
-    Settings,
-    LogOut,
     Plus,
     Edit,
     Trash2,
-    Eye,
     Users,
-    BarChart3,
-    FileText,
     Search,
-    Filter,
-    Download,
-    ChevronDown,
-    Shield,
     Building,
+    Loader2,
+    AlertCircle,
+    X,
 } from "lucide-react";
-import { Layouts } from "../../../layouts/layouts";
 
-const AdminDashboardBackup = () => {
-    const [activeTab, setActiveTab] = useState("overview");
-    const [selectedDate, setSelectedDate] = useState(
-        new Date().toISOString().split("T")[0]
-    );
+import {
+    addSeat,
+    updateSeat,
+    resetSeatOperation,
+    fetchSeats,
+    clearErrors,
+    deleteSeat,
+    searchSeatByTerm,
+    clearSuccess,
+    resetDeleteOperation,
+} from "../../../redux/adminSlice";
+import { useToast, ToastContainer } from "../../../components/Toast";
+import { useDispatch, useSelector } from "react-redux";
+import useDebounce from "../../../hooks/useDebounce.js";
+
+const ManageSeats = () => {
+    const dispatch = useDispatch();
+
+    // notify service
+    const { toasts, removeToast, showSuccess, showError, showInfo } =
+        useToast();
+
+    console.log(typeof toasts);
+    console.log(typeof useToast());
+
+    console.log(toasts);
+
+    // get the seat adding state
+    const {
+        seats,
+        seatsLoading,
+        seatsError,
+        seatOperationLoading,
+        seatOperationError,
+        seatOperationSuccess,
+        assignmentError,
+        deleteSuccess,
+        deleteError,
+    } = useSelector((state) => state.admin);
+
+    console.log("seats", seats);
+
+    //mock data
+    // const seats = [
+    //     {
+    //         id: 1,
+    //         seatNumber: "A1",
+    //         floor: 1,
+    //         location: "Near window",
+    //         status: "available",
+    //     },
+    //     {
+    //         id: 2,
+    //         seatNumber: "A2",
+    //         floor: 1,
+    //         location: "Near door",
+    //         status: "booked",
+    //     },
+    // ];
+
     const [showSeatModal, setShowSeatModal] = useState(false);
-    const [showAssignModal, setShowAssignModal] = useState(false);
-    const [selectedSeat, setSelectedSeat] = useState(null);
+    const [showUpdateSeatModal, setShowUpdateSeatModal] = useState(false);
+    const [updateSeatData, setUpdateSeatData] = useState(null);
     const [editMode, setEditMode] = useState(false);
+    const [selectedSeat, setSelectedSeat] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteSeatInfo, setDeleteSeatInfo] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("all");
+    const [status, setStatus] = useState("all");
 
-    // Mock data
-    const allSeats = [
-        {
-            id: 1,
-            seatNumber: "A01",
-            floor: "1st Floor",
-            status: "available",
-            location: "Window Side",
-        },
-        {
-            id: 2,
-            seatNumber: "A02",
-            floor: "1st Floor",
-            status: "occupied",
-            location: "Center",
-            occupiedBy: "John Doe",
-        },
-        {
-            id: 3,
-            seatNumber: "A03",
-            floor: "1st Floor",
-            status: "maintenance",
-            location: "Corner",
-        },
-        {
-            id: 4,
-            seatNumber: "B01",
-            floor: "2nd Floor",
-            status: "available",
-            location: "Window Side",
-        },
-        {
-            id: 5,
-            seatNumber: "B02",
-            floor: "2nd Floor",
-            status: "occupied",
-            location: "Center",
-            occupiedBy: "Jane Smith",
-        },
-        {
-            id: 6,
-            seatNumber: "B03",
-            floor: "2nd Floor",
-            status: "available",
-            location: "Corner",
-        },
-    ];
+    // seat adding form states
+    const [seatForm, setSeatForm] = useState({
+        seatNumber: "",
+        floor: "",
+        location: "",
+        status: "AVAILABLE",
+    });
 
-    const allReservations = [
-        {
-            id: 1,
-            seatNumber: "A01",
-            internName: "John Doe",
-            internId: "INT001",
-            date: "2025-08-28",
-            time: "09:00 AM - 05:00 PM",
-            status: "active",
-            floor: "1st Floor",
-            purpose: "Project Work",
-        },
-        {
-            id: 2,
-            seatNumber: "B02",
-            internName: "Jane Smith",
-            internId: "INT002",
-            date: "2025-08-29",
-            time: "09:00 AM - 01:00 PM",
-            status: "upcoming",
-            floor: "2nd Floor",
-            purpose: "Meeting Preparation",
-        },
-        {
-            id: 3,
-            seatNumber: "A03",
-            internName: "Mike Johnson",
-            internId: "INT003",
-            date: "2025-08-25",
-            time: "01:00 PM - 05:00 PM",
-            status: "completed",
-            floor: "1st Floor",
-            purpose: "Training Session",
-        },
-    ];
-
-    const statsData = {
-        totalSeats: 50,
-        occupiedSeats: 28,
-        availableSeats: 20,
-        maintenanceSeats: 2,
-        totalInterns: 35,
-        activeReservations: 28,
-        todayBookings: 12,
+    // change the vlaue of the setSeatForm useState
+    const handleSeatFormChange = (e) => {
+        setSeatForm({
+            ...seatForm,
+            [e.target.name]: e.target.value,
+        });
     };
 
-    const handleSeatAction = (seat, action) => {
-        setSelectedSeat(seat);
-        if (action === "edit") {
-            setEditMode(true);
-            setShowSeatModal(true);
-        } else if (action === "delete") {
-            // Handle delete logic
-            console.log("Delete seat:", seat);
-        } else if (action === "assign") {
-            setShowAssignModal(true);
-        }
+    // Handle changes for update seat modal
+    const handleUpdateSeatFormChange = (e) => {
+        setUpdateSeatData({
+            ...updateSeatData,
+            [e.target.name]: e.target.value,
+        });
     };
 
-    const handleAddSeat = () => {
+    // Form handlers
+    const resetSeatForm = () => {
+        setSeatForm({
+            seatNumber: "",
+            floor: "",
+            location: "",
+            status: "AVAILABLE",
+        });
         setSelectedSeat(null);
         setEditMode(false);
+    };
+
+    // open the add seat model
+    const handleAddSeat = () => {
+        console.log("clicked");
+        setEditMode(false);
+        resetSeatForm();
         setShowSeatModal(true);
     };
 
-    const getSeatStatusColor = (status) => {
-        switch (status) {
-            case "available":
-                return "bg-[#39B54A] text-white";
-            case "occupied":
-                return "bg-red-500 text-white";
-            case "maintenance":
-                return "bg-yellow-500 text-white";
-            default:
-                return "bg-gray-300 text-gray-700";
+    //
+    const handleSeatSubmit = (e) => {
+        e.preventDefault();
+        if (showUpdateSeatModal && updateSeatData) {
+            // For update, we pass the updateSeatData directly (it contains all seat data)
+            const { id, ...seatDataToUpdate } = updateSeatData;
+            dispatch(updateSeat({ id: id, seatData: seatDataToUpdate }));
+        } else {
+            console.log(seatForm);
+            dispatch(addSeat(seatForm));
         }
     };
 
-    const getReservationStatusColor = (status) => {
+    // // Handle success states of add/update seat
+    useEffect(() => {
+        if (seatOperationSuccess) {
+            const wasUpdating = showUpdateSeatModal;
+            setShowSeatModal(false);
+            setShowUpdateSeatModal(false);
+            setUpdateSeatData(null);
+            resetSeatForm();
+            dispatch(resetSeatOperation());
+            //dispatch(fetchSeats());
+            showSuccess(
+                wasUpdating
+                    ? "Seat updated successfully!"
+                    : "Seat added successfully!"
+            );
+        }
+    }, [seatOperationSuccess, dispatch, showUpdateSeatModal, showSuccess]);
+
+    // Handle error states of add seat
+    useEffect(() => {
+        if (seatOperationError) {
+            showError(seatOperationError);
+        }
+    }, [seatOperationError]);
+
+    useEffect(() => {
+        if (assignmentError) {
+            showError(assignmentError);
+        }
+    }, [assignmentError, showError]);
+
+    // fetch seats
+    useEffect(() => {
+        dispatch(fetchSeats());
+    }, [dispatch, seatOperationSuccess]);
+
+    // Get seat status class
+    const getSeatStatusClass = (status) => {
         switch (status) {
-            case "active":
-                return "bg-[#39B54A] text-white";
-            case "upcoming":
-                return "bg-[#00B5E2] text-white";
-            case "completed":
-                return "bg-gray-500 text-white";
+            case "AVAILABLE":
+                return "bg-green-100 text-green-800";
+            case "OCCUPIED":
+                return "bg-red-100 text-red-800";
+            case "MAINTENANCE":
+                return "bg-yellow-100 text-yellow-800";
             default:
-                return "bg-gray-300 text-gray-700";
+                return "bg-gray-100 text-gray-800";
         }
     };
 
-    const filteredSeats = allSeats.filter((seat) => {
-        const matchesSearch =
-            seat.seatNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            seat.floor.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter =
-            filterStatus === "all" || seat.status === filterStatus;
-        return matchesSearch && matchesFilter;
-    });
+    //handle delete seat
+    const handleDelete = (id) => {
+        dispatch(deleteSeat(id));
+        setIsDeleteModalOpen(false);
+        setDeleteSeatInfo(null);
+    };
+
+    // handle succes delete state
+    useEffect(() => {
+        if (deleteSuccess) {
+            showSuccess("Seat deleted successfully!");
+            dispatch(resetDeleteOperation());
+        }
+    }, [deleteSuccess, dispatch]);
+
+    // handle Error delete state
+    useEffect(() => {
+        if (deleteError) {
+            showSuccess("Seat deleted not successfully!");
+            dispatch(resetDeleteOperation());
+        }
+    }, [deleteError, dispatch]);
+
+    console.log("search term ", searchTerm);
+    console.log("filter ", status);
+
+    //use debounce
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+    useEffect(() => {
+        if (searchTerm.length > 0 || status) {
+            dispatch(
+                searchSeatByTerm({ searchTerm: debouncedSearchTerm, status })
+            );
+        }
+    }, [debouncedSearchTerm, status, dispatch]);
 
     return (
-        <Layouts>
-            <div className="min-h-screen bg-gradient-to-br from-[#b1c3d3] via-[#a8c0b8] to-[#a9bfa2]">               
-
-                {/* Main Content */}
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-                    {/* topic */}
-                    <div className="mb-8">
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 lg:p-8">
-                            <div className="text-center">
-                                <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 ">
-                                    Admin Control Center
-                                </h2>
-                            </div>
+        <div className="p-6 lg:p-8">
+            <div>
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div className="flex-1">
+                        <div className="relative">
+                            <Search className="w-5 h-5 absolute left-3 top-3 mt-1 ml-1 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search seats by seat number..."
+                                className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchTerm}
+                            />
                         </div>
                     </div>
+                    <select
+                        className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                        onChange={(e) => setStatus(e.target.value)}
+                        value={status}
+                    >
+                        <option value="all">All Status</option>
+                        <option value="AVAILABLE">Available</option>
+                        <option value="OCCUPIED">Occupied</option>
+                        <option value="MAINTENANCE">Maintenance</option>
+                    </select>
+                    <button
+                        className="bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-6 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center space-x-2"
+                        onClick={handleAddSeat}
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Seat</span>
+                    </button>
+                </div>
 
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Total Seats
-                                    </p>
-                                    <p className="text-3xl font-bold text-[#0057A8]">
-                                        {statsData.totalSeats}
-                                    </p>
-                                </div>
-                                <Building className="w-10 h-10 text-[#0057A8]/20" />
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Occupied
-                                    </p>
-                                    <p className="text-3xl font-bold text-red-500">
-                                        {statsData.occupiedSeats}
-                                    </p>
-                                </div>
-                                <Users className="w-10 h-10 text-red-500/20" />
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Available
-                                    </p>
-                                    <p className="text-3xl font-bold text-[#39B54A]">
-                                        {statsData.availableSeats}
-                                    </p>
-                                </div>
-                                <MapPin className="w-10 h-10 text-[#39B54A]/20" />
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200/50">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">
-                                        Today's Bookings
-                                    </p>
-                                    <p className="text-3xl font-bold text-[#00B5E2]">
-                                        {statsData.todayBookings}
-                                    </p>
-                                </div>
-                                <Calendar className="w-10 h-10 text-[#00B5E2]/20" />
-                            </div>
+                {/* Seats Grid */}
+                {seatsLoading ? (
+                    <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8 shadow-md animate-pulse">
+                        <svg
+                            className="w-5 h-5 mr-2 animate-spin"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                            ></circle>
+                            <path
+                                className="opacity-75"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 6v6l4 2"
+                            ></path>
+                        </svg>
+                        <span className="font-semibold">Loading Seats...</span>
+                    </div>
+                ) : seatsError ? (
+                    <div
+                        className="flex items-center justify-between bg-red-50 border border-red-50 text-red-700 px-4 py-8
+                     shadow-sm"
+                    >
+                        <div className="flex items-center space-x-2">
+                            <svg
+                                className="w-5 h-5 text-red-500"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                            </svg>
+                            <span className="font-medium">{seatsError}</span>
                         </div>
                     </div>
-
-                    {/* Navigation Tabs */}
-                    <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg mb-8 border border-white/30 overflow-hidden">
-                        <div className="border-b border-gray-200/50">
-                            <nav className="flex space-x-0">
-                                <button
-                                    onClick={() => setActiveTab("overview")}
-                                    className={`flex-1 py-6 px-6 font-semibold text-base transition-all duration-300 relative ${
-                                        activeTab === "overview"
-                                            ? "bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white shadow-lg"
-                                            : "text-gray-600 hover:text-[#0057A8] hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <BarChart3 className="w-5 h-5" />
-                                        <span>Overview</span>
-                                    </div>
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("seats")}
-                                    className={`flex-1 py-6 px-6 font-semibold text-base transition-all duration-300 relative ${
-                                        activeTab === "seats"
-                                            ? "bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white shadow-lg"
-                                            : "text-gray-600 hover:text-[#0057A8] hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <MapPin className="w-5 h-5" />
-                                        <span>Manage Seats</span>
-                                    </div>
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("reservations")}
-                                    className={`flex-1 py-6 px-6 font-semibold text-base transition-all duration-300 relative ${
-                                        activeTab === "reservations"
-                                            ? "bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white shadow-lg"
-                                            : "text-gray-600 hover:text-[#0057A8] hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <Calendar className="w-5 h-5" />
-                                        <span>All Reservations</span>
-                                    </div>
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab("reports")}
-                                    className={`flex-1 py-6 px-6 font-semibold text-base transition-all duration-300 relative ${
-                                        activeTab === "reports"
-                                            ? "bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white shadow-lg"
-                                            : "text-gray-600 hover:text-[#0057A8] hover:bg-gray-50"
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-center space-x-2">
-                                        <FileText className="w-5 h-5" />
-                                        <span>Reports</span>
-                                    </div>
-                                </button>
-                            </nav>
-                        </div>
-
-                        {/* Tab Content */}
-                        <div className="p-6 lg:p-8">
-                            {activeTab === "overview" && (
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                                        System Overview
+                ) : seats.length === 0 ? (
+                    <div className="col-span-1 text-center">
+                        <p className="text-gray-500">No seats available</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {seats.map((seat) => (
+                            <div className="bg-white rounded-xl p-6 border border-gray-300/70 hover:shadow-lg transition-all duration-300">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-gray-800">
+                                        Seat {seat.seatNumber}
                                     </h3>
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50 shadow-md">
-                                            <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                                                Quick Actions
-                                            </h4>
-                                            <div className="space-y-3">
-                                                <button
-                                                    onClick={handleAddSeat}
-                                                    className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2"
-                                                >
-                                                    <Plus className="w-4 h-4" />
-                                                    <span>Add New Seat</span>
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        setShowAssignModal(true)
-                                                    }
-                                                    className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2"
-                                                >
-                                                    <Users className="w-4 h-4" />
-                                                    <span>
-                                                        Manual Seat Assignment
-                                                    </span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl p-6 border border-gray-200/50 shadow-md">
-                                            <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                                                Recent Activity
-                                            </h4>
-                                            <div className="space-y-3">
-                                                <div className="flex items-center space-x-3 text-sm">
-                                                    <div className="w-2 h-2 bg-[#39B54A] rounded-full"></div>
-                                                    <span>
-                                                        Seat A01 assigned to
-                                                        John Doe
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center space-x-3 text-sm">
-                                                    <div className="w-2 h-2 bg-[#00B5E2] rounded-full"></div>
-                                                    <span>
-                                                        New seat B05 added to
-                                                        2nd Floor
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center space-x-3 text-sm">
-                                                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                                    <span>
-                                                        Seat A03 marked for
-                                                        maintenance
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === "seats" && (
-                                <div>
-                                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                                        <div className="flex-1">
-                                            <div className="relative">
-                                                <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Search seats..."
-                                                    value={searchTerm}
-                                                    onChange={(e) =>
-                                                        setSearchTerm(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                                />
-                                            </div>
-                                        </div>
-                                        <select
-                                            value={filterStatus}
-                                            onChange={(e) =>
-                                                setFilterStatus(e.target.value)
-                                            }
-                                            className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                        >
-                                            <option value="all">
-                                                All Status
-                                            </option>
-                                            <option value="available">
-                                                Available
-                                            </option>
-                                            <option value="occupied">
-                                                Occupied
-                                            </option>
-                                            <option value="maintenance">
-                                                Maintenance
-                                            </option>
-                                        </select>
-                                        <button
-                                            onClick={handleAddSeat}
-                                            className="bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-6 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center space-x-2"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            <span>Add Seat</span>
-                                        </button>
-                                    </div>
-
-                                    {/* Seats Grid */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                        {filteredSeats.map((seat) => (
-                                            <div
-                                                key={seat.id}
-                                                className="bg-white rounded-xl p-6 border border-gray-200/50 hover:shadow-lg transition-all duration-300"
-                                            >
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h3 className="text-xl font-bold text-gray-800">
-                                                        Seat {seat.seatNumber}
-                                                    </h3>
-                                                    <span
-                                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${getSeatStatusColor(
-                                                            seat.status
-                                                        )} shadow-md`}
-                                                    >
-                                                        {seat.status
-                                                            .charAt(0)
-                                                            .toUpperCase() +
-                                                            seat.status.slice(
-                                                                1
-                                                            )}
-                                                    </span>
-                                                </div>
-                                                <div className="space-y-2 mb-4">
-                                                    <div className="flex items-center text-gray-600">
-                                                        <Building className="w-4 h-4 mr-2" />
-                                                        <span className="text-sm">
-                                                            {seat.floor}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center text-gray-600">
-                                                        <MapPin className="w-4 h-4 mr-2" />
-                                                        <span className="text-sm">
-                                                            {seat.location}
-                                                        </span>
-                                                    </div>
-                                                    {seat.occupiedBy && (
-                                                        <div className="flex items-center text-gray-600">
-                                                            <User className="w-4 h-4 mr-2" />
-                                                            <span className="text-sm">
-                                                                {
-                                                                    seat.occupiedBy
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex space-x-2">
-                                                    <button
-                                                        onClick={() =>
-                                                            handleSeatAction(
-                                                                seat,
-                                                                "edit"
-                                                            )
-                                                        }
-                                                        className="flex-1 p-2 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200"
-                                                    >
-                                                        <Edit className="w-4 h-4 mx-auto" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleSeatAction(
-                                                                seat,
-                                                                "assign"
-                                                            )
-                                                        }
-                                                        className="flex-1 p-2 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200"
-                                                    >
-                                                        <Users className="w-4 h-4 mx-auto" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleSeatAction(
-                                                                seat,
-                                                                "delete"
-                                                            )
-                                                        }
-                                                        className="flex-1 p-2 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200"
-                                                    >
-                                                        <Trash2 className="w-4 h-4 mx-auto" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === "reservations" && (
-                                <div>
-                                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Filter by Date
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={selectedDate}
-                                                onChange={(e) =>
-                                                    setSelectedDate(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                            />
-                                        </div>
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Search by Intern
-                                            </label>
-                                            <div className="relative">
-                                                <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Search by intern name or ID..."
-                                                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Reservations List */}
-                                    <div className="space-y-4">
-                                        {allReservations.map((reservation) => (
-                                            <div
-                                                key={reservation.id}
-                                                className="bg-white rounded-xl p-6 border border-gray-200/50 hover:shadow-lg transition-all duration-300"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center space-x-6">
-                                                        <div className="bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl p-3">
-                                                            <MapPin className="w-6 h-6 text-white" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-xl font-bold text-gray-800 mb-1">
-                                                                Seat{" "}
-                                                                {
-                                                                    reservation.seatNumber
-                                                                }
-                                                            </h3>
-                                                            <p className="text-base text-gray-600 mb-1">
-                                                                {
-                                                                    reservation.floor
-                                                                }
-                                                            </p>
-                                                            <div className="flex items-center text-gray-500">
-                                                                <Calendar className="w-4 h-4 mr-1" />
-                                                                <span className="text-sm font-medium">
-                                                                    {
-                                                                        reservation.date
-                                                                    }
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-lg font-semibold text-gray-800 mb-1">
-                                                                {
-                                                                    reservation.internName
-                                                                }
-                                                            </h4>
-                                                            <p className="text-sm text-gray-600 mb-1">
-                                                                ID:{" "}
-                                                                {
-                                                                    reservation.internId
-                                                                }
-                                                            </p>
-                                                            <p className="text-sm text-gray-500">
-                                                                {
-                                                                    reservation.purpose
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                        <div className="text-center">
-                                                            <p className="text-base font-semibold text-gray-800 mb-1">
-                                                                Time Slot
-                                                            </p>
-                                                            <p className="text-sm text-gray-600 flex items-center">
-                                                                <Clock className="w-3 h-3 mr-1" />
-                                                                {
-                                                                    reservation.time
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                        <div>
-                                                            <span
-                                                                className={`px-4 py-2 rounded-full text-sm font-semibold ${getReservationStatusColor(
-                                                                    reservation.status
-                                                                )} shadow-md`}
-                                                            >
-                                                                {reservation.status
-                                                                    .charAt(0)
-                                                                    .toUpperCase() +
-                                                                    reservation.status.slice(
-                                                                        1
-                                                                    )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <button className="p-3 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200">
-                                                            <Eye className="w-5 h-5" />
-                                                        </button>
-                                                        <button className="p-3 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200">
-                                                            <Edit className="w-5 h-5" />
-                                                        </button>
-                                                        <button className="p-3 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
-                                                            <Trash2 className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {activeTab === "reports" && (
-                                <div>
-                                    <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                                        Usage Reports
-                                    </h3>
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        <div className="bg-white rounded-xl p-6 border border-gray-200/50 shadow-lg">
-                                            <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                                                Generate Reports
-                                            </h4>
-                                            <div className="space-y-4">
-                                                <button className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2">
-                                                    <Download className="w-4 h-4" />
-                                                    <span>
-                                                        Daily Usage Report
-                                                    </span>
-                                                </button>
-                                                <button className="w-full bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2">
-                                                    <Download className="w-4 h-4" />
-                                                    <span>Weekly Summary</span>
-                                                </button>
-                                                <button className="w-full bg-gradient-to-r from-[#00B5E2] to-[#39B54A] text-white py-3 px-4 rounded-lg font-semibold hover:from-[#0099CC] hover:to-[#2d8f3f] transition-all duration-300 flex items-center justify-center space-x-2">
-                                                    <Download className="w-4 h-4" />
-                                                    <span>
-                                                        Monthly Analytics
-                                                    </span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="bg-white rounded-xl p-6 border border-gray-200/50 shadow-lg">
-                                            <h4 className="text-lg font-semibold text-gray-800 mb-4">
-                                                Quick Stats
-                                            </h4>
-                                            <div className="space-y-4">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600">
-                                                        Peak Usage Time
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        10:00 AM - 2:00 PM
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600">
-                                                        Most Popular Floor
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        2nd Floor
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600">
-                                                        Average Booking Duration
-                                                    </span>
-                                                    <span className="font-semibold">
-                                                        6.5 hours
-                                                    </span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-gray-600">
-                                                        Utilization Rate
-                                                    </span>
-                                                    <span className="font-semibold text-[#39B54A]">
-                                                        78%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </main>
-
-                {/* Add/Edit Seat Modal */}
-                {showSeatModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
-                            <div className="text-center mb-6">
-                                <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
-                                    {editMode ? (
-                                        <Edit className="w-6 h-6 text-white" />
-                                    ) : (
-                                        <Plus className="w-6 h-6 text-white" />
-                                    )}
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                                    {editMode
-                                        ? `Edit Seat ${selectedSeat?.seatNumber}`
-                                        : "Add New Seat"}
-                                </h3>
-                            </div>
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Seat Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        defaultValue={
-                                            selectedSeat?.seatNumber || ""
-                                        }
-                                        className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                        placeholder="e.g., A01"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Floor
-                                    </label>
-                                    <select
-                                        defaultValue={selectedSeat?.floor || ""}
-                                        className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    <span
+                                        className={`px-3 py-1 rounded-full text-sm font-semibold ${getSeatStatusClass(
+                                            seat.status
+                                        )}`}
                                     >
-                                        <option value="">Select Floor</option>
-                                        <option value="1st Floor">
-                                            1st Floor
-                                        </option>
-                                        <option value="2nd Floor">
-                                            2nd Floor
-                                        </option>
-                                        <option value="3rd Floor">
-                                            3rd Floor
-                                        </option>
-                                    </select>
+                                        {seat.status}
+                                    </span>
                                 </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Location
-                                    </label>
-                                    <input
-                                        type="text"
-                                        defaultValue={
-                                            selectedSeat?.location || ""
-                                        }
-                                        className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                        placeholder="e.g., Window Side, Corner, Center"
-                                    />
+                                <div className="space-y-2 mb-4">
+                                    <div className="flex items-center text-gray-600">
+                                        <Building className="w-4 h-4 mr-2" />
+                                        <span className="text-sm">
+                                            Floor {seat.floor}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                        <MapPin className="w-4 h-4 mr-2" />
+                                        <span className="text-sm">
+                                            {seat.location}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Status
-                                    </label>
-                                    <select
-                                        defaultValue={
-                                            selectedSeat?.status || "available"
-                                        }
-                                        className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                <div className="flex space-x-2">
+                                    <button
+                                        className="flex-1 p-2 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200"
+                                        onClick={() => {
+                                            setShowUpdateSeatModal(true);
+                                            setUpdateSeatData(seat);
+                                        }}
                                     >
-                                        <option value="available">
-                                            Available
-                                        </option>
-                                        <option value="maintenance">
-                                            Maintenance
-                                        </option>
-                                        <option value="occupied">
-                                            Occupied
-                                        </option>
-                                    </select>
+                                        <Edit className="w-4 h-4 mx-auto" />
+                                    </button>
+                                    {/* <button className="flex-1 p-2 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200">
+                                        <Users className="w-4 h-4 mx-auto" />
+                                    </button> */}
+                                    <button
+                                        className="flex-1 p-2 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200 "
+                                        onClick={() => {
+                                            setIsDeleteModalOpen(true);
+                                            setDeleteSeatInfo(seat);
+                                        }}
+                                    >
+                                        <Trash2 className="w-4 h-4 mx-auto" />
+                                    </button>
                                 </div>
                             </div>
-                            <div className="flex space-x-4 mt-8">
-                                <button
-                                    onClick={() => setShowSeatModal(false)}
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => setShowSeatModal(false)}
-                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg"
-                                >
-                                    {editMode ? "Update Seat" : "Add Seat"}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {showAssignModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
-                            <div className="text-center mb-6">
-                                <div className="w-12 h-12 bg-gradient-to-br from-[#39B54A] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
-                                    <Users className="w-6 h-6 text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                                    Manual Seat Assignment
-                                </h3>
-                            </div>
-                            <div className="space-y-6">
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Select Intern
-                                    </label>
-                                    <select className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]">
-                                        <option value="">
-                                            Choose an intern
-                                        </option>
-                                        <option value="INT001">
-                                            John Doe (INT001)
-                                        </option>
-                                        <option value="INT002">
-                                            Jane Smith (INT002)
-                                        </option>
-                                        <option value="INT003">
-                                            Mike Johnson (INT003)
-                                        </option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Select Seat
-                                    </label>
-                                    <select className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]">
-                                        <option value="">Choose a seat</option>
-                                        <option value="A01">
-                                            A01 - 1st Floor (Available)
-                                        </option>
-                                        <option value="B01">
-                                            B01 - 2nd Floor (Available)
-                                        </option>
-                                        <option value="B03">
-                                            B03 - 2nd Floor (Available)
-                                        </option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Date
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={selectedDate}
-                                        className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-base font-semibold text-gray-800 mb-2">
-                                        Time Slot
-                                    </label>
-                                    <select className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]">
-                                        <option>
-                                            09:00 AM - 05:00 PM (Full Day)
-                                        </option>
-                                        <option>
-                                            09:00 AM - 01:00 PM (Morning)
-                                        </option>
-                                        <option>
-                                            01:00 PM - 05:00 PM (Afternoon)
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex space-x-4 mt-8">
-                                <button
-                                    onClick={() => setShowAssignModal(false)}
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => setShowAssignModal(false)}
-                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#39B54A] to-[#00B5E2] text-white rounded-lg hover:from-[#2d8f3f] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg"
-                                >
-                                    Assign Seat
-                                </button>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 )}
             </div>
-        </Layouts>
+
+            {/* Add Seat Modal */}
+            {showSeatModal && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Plus className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                Add New Seat
+                            </h3>
+                        </div>
+
+                        {/* Error Message */}
+                        {seatOperationError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                                <span className="text-red-700 text-sm">
+                                    {seatOperationError}
+                                </span>
+                                <button
+                                    onClick={() => dispatch(clearErrors())}
+                                    className="ml-auto text-red-500 hover:text-red-700"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSeatSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Seat Number *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seatNumber"
+                                    value={seatForm.seatNumber}
+                                    onChange={handleSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    placeholder="e.g., A01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Floor *
+                                </label>
+                                <select
+                                    name="floor"
+                                    value={seatForm.floor}
+                                    onChange={handleSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Floor</option>
+                                    <option value="1st Floor">1st Floor</option>
+                                    <option value="2nd Floor">2nd Floor</option>
+                                    <option value="3rd Floor">3rd Floor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Location
+                                </label>
+                                <select
+                                    name="location"
+                                    value={seatForm.location}
+                                    onChange={handleSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Location</option>
+                                    <option value="window">Window</option>
+                                    <option value="center">Center</option>
+                                    <option value="corner">Corner</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={seatForm.status}
+                                    onChange={handleSeatFormChange}
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="MAINTENANCE">
+                                        Maintenance
+                                    </option>
+                                    <option value="OCCUPIED">Occupied</option>
+                                </select>
+                            </div>
+                            <div className="flex space-x-4 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowSeatModal(false);
+                                        resetSeatForm();
+                                        dispatch(clearErrors());
+                                    }}
+                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={seatOperationLoading}
+                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center"
+                                >
+                                    {seatOperationLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                    ) : null}
+                                    Add Seat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* update/edit seat */}
+            {showUpdateSeatModal && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Plus className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                Edit {updateSeatData.seatNumber} Seat
+                            </h3>
+                        </div>
+
+                        {/* Error Message */}
+                        {seatOperationError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                                <span className="text-red-700 text-sm">
+                                    {seatOperationError}
+                                </span>
+                                <button
+                                    onClick={() => dispatch(clearErrors())}
+                                    className="ml-auto text-red-500 hover:text-red-700"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSeatSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Seat Number *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seatNumber"
+                                    value={updateSeatData.seatNumber}
+                                    onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    placeholder="e.g., A01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Floor *
+                                </label>
+                                <select
+                                    name="floor"
+                                    value={updateSeatData.floor}
+                                    onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Floor</option>
+                                    <option value="1st Floor">1st Floor</option>
+                                    <option value="2nd Floor">2nd Floor</option>
+                                    <option value="3rd Floor">3rd Floor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Location
+                                </label>
+                                <select
+                                    name="location"
+                                    value={updateSeatData.location}
+                                    onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Location</option>
+                                    <option value="window">Window</option>
+                                    <option value="center">Center</option>
+                                    <option value="corner">Corner</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={updateSeatData.status}
+                                    onChange={handleUpdateSeatFormChange}
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="MAINTENANCE">
+                                        Maintenance
+                                    </option>
+                                    <option value="OCCUPIED">Occupied</option>
+                                </select>
+                            </div>
+                            <div className="flex space-x-4 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowUpdateSeatModal(false);
+                                        setUpdateSeatData(null);
+                                        resetSeatForm();
+                                        dispatch(clearErrors());
+                                    }}
+                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={seatOperationLoading}
+                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center"
+                                >
+                                    {seatOperationLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                    ) : null}
+                                    Update Seat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Container */}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+            {/* Delete Seat Modal */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 backdrop-blur-md bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        <h3 className="text-lg font-semibold mb-3">
+                            Confirm Delete
+                        </h3>
+                        <p className="mb-5">
+                            Are you sure you want to delete{" "}
+                            <strong>
+                                {deleteSeatInfo
+                                    ? deleteSeatInfo.seatNumber
+                                    : ""}
+                            </strong>
+                            ?
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => handleDelete(deleteSeatInfo.id)}
+                                className="px-4 py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition"
+                            >
+                                Yes, Delete
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                    setDeleteSeatInfo(null);
+                                }}
+                                className="px-4 py-2 font-semibold bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
-export default AdminDashboardBackup;
+export default ManageSeats;

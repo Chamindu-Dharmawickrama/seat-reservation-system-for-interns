@@ -60,6 +60,7 @@ export const updateSeat = createAsyncThunk(
     "admin/updateSeat",
     async ({ id, seatData }, { rejectWithValue }) => {
         try {
+            console.log("async thunk",seatData)
             const response = await api.put(`/seats/updateSeat/${id}`, seatData);
             return response.data;
         } catch (error) {

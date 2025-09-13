@@ -11,9 +11,6 @@ export const getAllSeats = async (req, res) => {
     }
 };
 
-// get available seats
-//--------------------
-
 // search seat by seatNumber and filters
 export const searchSeat = async (req, res) => {
     try {
@@ -104,7 +101,7 @@ export const updateSeat = async (req, res) => {
         const { seatNumber, floor, location, status } = req.body;
 
         // check required fields
-        if (!seatNumber || !floor || !location || !status) {
+        if (!floor || !location || !status) {
             errorResponse(res, "Missing required fields", undefined, 400);
         }
 
@@ -116,28 +113,12 @@ export const updateSeat = async (req, res) => {
             errorResponse(res, "Seat not found", undefined, 404);
         }
 
-        // check seat number is exist
-        const existingSeatNumber = await DB.seat.findUnique({
-            where: {
-                seatNumber,
-            },
-        });
-        if (existingSeatNumber) {
-            errorResponse(
-                res,
-                "Seat with this number already exists",
-                undefined,
-                409
-            );
-        }
-
         //update seat
         const seat = await DB.seat.update({
             where: {
                 id,
             },
             data: {
-                seatNumber,
                 floor,
                 location,
                 status,

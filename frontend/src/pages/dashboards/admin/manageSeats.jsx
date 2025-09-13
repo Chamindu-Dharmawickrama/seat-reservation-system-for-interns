@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from "react";
-
+import { useState, useEffect } from "react";
 import {
     MapPin,
-    User,
     Plus,
     Edit,
     Trash2,
-    Users,
     Search,
     Building,
     Loader2,
     AlertCircle,
     X,
 } from "lucide-react";
-
 import {
     addSeat,
     resetSeatOperation,
@@ -21,8 +17,8 @@ import {
     clearErrors,
     deleteSeat,
     searchSeatByTerm,
-    clearSuccess,
     resetDeleteOperation,
+    updateSeat,
 } from "../../../redux/adminSlice";
 import { useToast, ToastContainer } from "../../../components/Toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,9 +30,6 @@ const ManageSeats = () => {
     // notify service
     const { toasts, removeToast, showSuccess, showError, showInfo } =
         useToast();
-
-    console.log(typeof toasts);
-    console.log(typeof useToast());
 
     console.log(toasts);
 
@@ -55,33 +48,15 @@ const ManageSeats = () => {
 
     console.log("seats", seats);
 
-    //mock data
-    // const seats = [
-    //     {
-    //         id: 1,
-    //         seatNumber: "A1",
-    //         floor: 1,
-    //         location: "Near window",
-    //         status: "available",
-    //     },
-    //     {
-    //         id: 2,
-    //         seatNumber: "A2",
-    //         floor: 1,
-    //         location: "Near door",
-    //         status: "booked",
-    //     },
-    // ];
-
     const [showSeatModal, setShowSeatModal] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [selectedSeat, setSelectedSeat] = useState(null);
+    const [showUpdateSeatModal, setShowUpdateSeatModal] = useState(false);
+    const [selectSeatData, setSelectSeatData] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteSeatInfo, setDeleteSeatInfo] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [status, setStatus] = useState("all");
 
-    // seat adding form states
+    // new seat info
     const [seatForm, setSeatForm] = useState({
         seatNumber: "",
         floor: "",
@@ -89,10 +64,26 @@ const ManageSeats = () => {
         status: "AVAILABLE",
     });
 
-    // change the vlaue of the setSeatForm useState
+    // update seat info
+    const [updatedSeatData, setUpdatedSeatData] = useState({
+        seatNumber: "",
+        floor: "",
+        location: "",
+        status: "AVAILABLE",
+    });
+
+    // change the vlaue of the setSeatForm useState ( add seat )
     const handleSeatFormChange = (e) => {
         setSeatForm({
             ...seatForm,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    // handle change for update seat modal
+    const handleUpdateSeatFormChange = (e) => {
+        setUpdatedSeatData({
+            ...updatedSeatData,
             [e.target.name]: e.target.value,
         });
     };
@@ -105,43 +96,51 @@ const ManageSeats = () => {
             location: "",
             status: "AVAILABLE",
         });
-        setSelectedSeat(null);
-        setEditMode(false);
+        setUpdatedSeatData({
+            seatNumber: "",
+            floor: "",
+            location: "",
+            status: "AVAILABLE",
+        });
     };
 
     // open the add seat model
     const handleAddSeat = () => {
         console.log("clicked");
-        setEditMode(false);
         resetSeatForm();
         setShowSeatModal(true);
     };
 
-    //
+    // add seat
     const handleSeatSubmit = (e) => {
         e.preventDefault();
-        if (editMode && selectedSeat) {
-            dispatch(updateSeat({ id: selectedSeat.id, seatData: seatForm }));
-        } else {
-            console.log(seatForm);
-            dispatch(addSeat(seatForm));
-        }
+        console.log(seatForm);
+        dispatch(addSeat(seatForm));
     };
 
-    // // Handle success states of add seat
+    // update seat
+    const handleUpdateSeatSubmit = (e) => {
+        e.preventDefault();
+        dispatch(
+            updateSeat({ id: selectSeatData.id, seatData: updatedSeatData })
+        );
+    };
+
+    // // Handle success states of add seat and update seat
     useEffect(() => {
         if (seatOperationSuccess) {
             setShowSeatModal(false);
+            setShowUpdateSeatModal(false);
             resetSeatForm();
             dispatch(resetSeatOperation());
             //dispatch(fetchSeats());
             showSuccess(
-                editMode
+                showUpdateSeatModal
                     ? "Seat updated successfully!"
                     : "Seat added successfully!"
             );
         }
-    }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
+    }, [seatOperationSuccess, dispatch, showUpdateSeatModal, showSuccess]);
 
     // Handle error states of add seat
     useEffect(() => {
@@ -150,11 +149,11 @@ const ManageSeats = () => {
         }
     }, [seatOperationError]);
 
-    useEffect(() => {
-        if (assignmentError) {
-            showError(assignmentError);
-        }
-    }, [assignmentError, showError]);
+    // useEffect(() => {
+    //     if (assignmentError) {
+    //         showError(assignmentError);
+    //     }
+    // }, [assignmentError, showError]);
 
     // fetch seats
     useEffect(() => {
@@ -330,7 +329,19 @@ const ManageSeats = () => {
                                     </div>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button className="flex-1 p-2 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200">
+                                    <button
+                                        className="flex-1 p-2 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200"
+                                        onClick={() => {
+                                            setShowUpdateSeatModal(true);
+                                            setSelectSeatData(seat);
+                                            setUpdatedSeatData({
+                                                seatNumber: seat.seatNumber,
+                                                floor: seat.floor,
+                                                location: seat.location,
+                                                status: seat.status,
+                                            });
+                                        }}
+                                    >
                                         <Edit className="w-4 h-4 mx-auto" />
                                     </button>
                                     {/* <button className="flex-1 p-2 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200">
@@ -352,22 +363,16 @@ const ManageSeats = () => {
                 )}
             </div>
 
-            {/* Add/Edit Seat Modal */}
+            {/* Add Seat Modal */}
             {showSeatModal && (
                 <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
                         <div className="text-center mb-6">
                             <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
-                                {editMode ? (
-                                    <Edit className="w-6 h-6 text-white" />
-                                ) : (
-                                    <Plus className="w-6 h-6 text-white" />
-                                )}
+                                <Plus className="w-6 h-6 text-white" />
                             </div>
                             <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                                {editMode
-                                    ? `Edit Seat ${selectedSeat?.seatNumber}`
-                                    : "Add New Seat"}
+                                Add New Seat
                             </h3>
                         </div>
 
@@ -473,7 +478,134 @@ const ManageSeats = () => {
                                     {seatOperationLoading ? (
                                         <Loader2 className="w-4 h-4 animate-spin mr-2" />
                                     ) : null}
-                                    {editMode ? "Update Seat" : "Add Seat"}
+                                    Add Seat
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* update/edit seat */}
+            {showUpdateSeatModal && (
+                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Plus className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                Edit {selectSeatData.seatNumber} Seat
+                            </h3>
+                        </div>
+
+                        {/* Error Message */}
+                        {seatOperationError && (
+                            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                                <span className="text-red-700 text-sm">
+                                    {seatOperationError}
+                                </span>
+                                <button
+                                    onClick={() => dispatch(clearErrors())}
+                                    className="ml-auto text-red-500 hover:text-red-700"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+
+                        <form
+                            onSubmit={handleUpdateSeatSubmit}
+                            className="space-y-6"
+                        >
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Seat Number *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="seatNumber"
+                                    value={selectSeatData.seatNumber}
+                                    //onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                    placeholder="e.g., A01"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Floor *
+                                </label>
+                                <select
+                                    name="floor"
+                                    value={updatedSeatData.floor}
+                                    onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Floor</option>
+                                    <option value="1st Floor">1st Floor</option>
+                                    <option value="2nd Floor">2nd Floor</option>
+                                    <option value="3rd Floor">3rd Floor</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Location
+                                </label>
+                                <select
+                                    name="location"
+                                    value={updatedSeatData.location}
+                                    onChange={handleUpdateSeatFormChange}
+                                    required
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="">Select Location</option>
+                                    <option value="window">Window</option>
+                                    <option value="center">Center</option>
+                                    <option value="corner">Corner</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    name="status"
+                                    value={updatedSeatData.status}
+                                    onChange={handleUpdateSeatFormChange}
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
+                                >
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="MAINTENANCE">
+                                        Maintenance
+                                    </option>
+                                    <option value="OCCUPIED">Occupied</option>
+                                </select>
+                            </div>
+                            <div className="flex space-x-4 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowUpdateSeatModal(false);
+                                        setSelectSeatData(null);
+                                        resetSeatForm();
+                                        dispatch(clearErrors());
+                                    }}
+                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={seatOperationLoading}
+                                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center"
+                                >
+                                    {seatOperationLoading ? (
+                                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                    ) : null}
+                                    Update Seat
                                 </button>
                             </div>
                         </form>
