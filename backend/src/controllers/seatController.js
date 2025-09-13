@@ -12,6 +12,49 @@ export const getAllSeats = async (req, res) => {
 };
 
 // get available seats
+//--------------------
+
+// search seat by seatNumber and filters
+export const searchSeat = async (req, res) => {
+    try {
+        const { seatNumber, status } = req.query;
+
+        console.log(seatNumber);
+        console.log(status);
+
+        // Build dynamic filter object
+        const filter = {};
+
+        // Search by seatNumber (partial match, case-insensitive)
+        if (seatNumber) {
+            filter.seatNumber = {
+                contains: seatNumber, // matches partial input
+                mode: "insensitive",
+            };
+        }
+
+        //if status == all , not set the filter status ( give seats without filtering)
+        if (status && status !== "all") {
+            filter.status = status;
+        }
+
+        console.log("Filter ", filter);
+
+        const seats = await DB.seat.findMany({
+            where: filter,
+        });
+
+        //if seats not found
+        if (!seats || seats.length === 0) {
+            return errorResponse(res, "No seats found!", undefined, 404);
+        }
+
+        // if seats found
+        successResponse(res, "Seats found", seats);
+    } catch (error) {
+        errorResponse(res, error.message, error);
+    }
+};
 
 // create a new seat
 export const addNewSeat = async (req, res) => {
@@ -54,25 +97,54 @@ export const addNewSeat = async (req, res) => {
     }
 };
 
-// search seat by seatNumber and filters
-export const searchSeat = async (req, res) => {
+// update seat
+export const updateSeat = async (req, res) => {
     try {
-        const { seatNumber, status } = req.query;
+        const { id } = req.params;
+        const { seatNumber, floor, location, status } = req.body;
 
-        // Build dynamic filter object
-        const filter = {};
-        if (seatNumber) filter.seatNumber = seatNumber;
-        // Only add status if it's not "all" and is defined
-        if (status && status !== "all") filter.status = status;
+        // check required fields
+        if (!seatNumber || !floor || !location || !status) {
+            errorResponse(res, "Missing required fields", undefined, 400);
+        }
 
-        const seats = await DB.seat.findMany({
-            where: filter,
+        // check the seat is exists
+        const existingSeat = await DB.seat.findUnique({
+            where: { id },
+        });
+        if (!existingSeat) {
+            errorResponse(res, "Seat not found", undefined, 404);
+        }
+
+        // check seat number is exist
+        const existingSeatNumber = await DB.seat.findUnique({
+            where: {
+                seatNumber,
+            },
+        });
+        if (existingSeatNumber) {
+            errorResponse(
+                res,
+                "Seat with this number already exists",
+                undefined,
+                409
+            );
+        }
+
+        //update seat
+        const seat = await DB.seat.update({
+            where: {
+                id,
+            },
+            data: {
+                seatNumber,
+                floor,
+                location,
+                status,
+            },
         });
 
-        if (!seats || seats.length === 0) {
-            return errorResponse(res, "No seats found!", undefined, 404);
-        }
-        successResponse(res, "Seats found", seats);
+        successResponse(res, "Seat updated successfully", seat);
     } catch (error) {
         errorResponse(res, error.message, error);
     }

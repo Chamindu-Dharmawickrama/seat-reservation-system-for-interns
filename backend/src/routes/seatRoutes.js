@@ -4,6 +4,7 @@ import {
     deleteSeat,
     getAllSeats,
     searchSeat,
+    updateSeat,
 } from "../controllers/seatController.js";
 
 const seatRouter = Router();
@@ -13,5 +14,6 @@ seatRouter.get("/", getAllSeats);
 seatRouter.post("/addSeat", addNewSeat);
 seatRouter.delete("/delete/:id", deleteSeat);
 seatRouter.get("/searchSeat", searchSeat);
+seatRouter.put("/updateSeat/:id", updateSeat)
 
 export default seatRouter;

@@ -96,9 +96,9 @@ export const useToast = () => {
         setToasts((prev) => prev.filter((toast) => toast.id !== id));
     };
 
-    const showSuccess = (message) => addToast(message, "success");
-    const showError = (message) => addToast(message, "error");
-    const showInfo = (message) => addToast(message, "info");
+    const showSuccess = (message) => addToast(message, "success",5000);
+    const showError = (message) => addToast(message, "error",5000);
+    const showInfo = (message) => addToast(message, "info",5000);
 
     return {
         toasts,

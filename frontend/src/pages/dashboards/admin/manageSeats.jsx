@@ -21,9 +21,12 @@ import {
     clearErrors,
     deleteSeat,
     searchSeatByTerm,
+    clearSuccess,
+    resetDeleteOperation,
 } from "../../../redux/adminSlice";
 import { useToast, ToastContainer } from "../../../components/Toast";
 import { useDispatch, useSelector } from "react-redux";
+import useDebounce from "../../../hooks/useDebounce.js";
 
 const ManageSeats = () => {
     const dispatch = useDispatch();
@@ -47,10 +50,10 @@ const ManageSeats = () => {
         seatOperationSuccess,
         assignmentError,
         deleteSuccess,
-        deleteError
+        deleteError,
     } = useSelector((state) => state.admin);
 
-    console.log("seats",seats)
+    console.log("seats", seats);
 
     //mock data
     // const seats = [
@@ -125,7 +128,7 @@ const ManageSeats = () => {
         }
     };
 
-    // // Handle success states
+    // // Handle success states of add seat
     useEffect(() => {
         if (seatOperationSuccess) {
             setShowSeatModal(false);
@@ -140,16 +143,12 @@ const ManageSeats = () => {
         }
     }, [seatOperationSuccess, dispatch, editMode, showSuccess]);
 
-    // Handle error states
+    // Handle error states of add seat
     useEffect(() => {
         if (seatOperationError) {
             showError(seatOperationError);
-            // Clear the error after showing toast
-            // setTimeout(() => {
-            //     dispatch(clearErrors());
-            // }, 100);
         }
-    }, [seatOperationError, showError, dispatch]);
+    }, [seatOperationError]);
 
     useEffect(() => {
         if (assignmentError) {
@@ -160,16 +159,16 @@ const ManageSeats = () => {
     // fetch seats
     useEffect(() => {
         dispatch(fetchSeats());
-    }, [dispatch,seatOperationSuccess]);
+    }, [dispatch, seatOperationSuccess]);
 
     // Get seat status class
     const getSeatStatusClass = (status) => {
         switch (status) {
-            case "available":
+            case "AVAILABLE":
                 return "bg-green-100 text-green-800";
-            case "booked":
+            case "OCCUPIED":
                 return "bg-red-100 text-red-800";
-            case "maintenance":
+            case "MAINTENANCE":
                 return "bg-yellow-100 text-yellow-800";
             default:
                 return "bg-gray-100 text-gray-800";
@@ -183,29 +182,35 @@ const ManageSeats = () => {
         setDeleteSeatInfo(null);
     };
 
-    // handle succes delete state 
-    useEffect(()=>{
-        if(deleteSuccess){
-            showSuccess("Seat deleted successfully!")
+    // handle succes delete state
+    useEffect(() => {
+        if (deleteSuccess) {
+            showSuccess("Seat deleted successfully!");
+            dispatch(resetDeleteOperation());
         }
-    },[deleteSuccess])
+    }, [deleteSuccess, dispatch]);
 
-    // handle Error delete state 
-    useEffect(()=>{
-        if(deleteError){
-            showSuccess("Seat deleted not successfully!")
+    // handle Error delete state
+    useEffect(() => {
+        if (deleteError) {
+            showSuccess("Seat deleted not successfully!");
+            dispatch(resetDeleteOperation());
         }
-    },[deleteError])
+    }, [deleteError, dispatch]);
 
-    
+    console.log("search term ", searchTerm);
+    console.log("filter ", status);
 
-    console.log("search term", searchTerm);
+    //use debounce
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
     useEffect(() => {
-        if (searchTerm){
-            dispatch(searchSeatByTerm({ searchTerm, status }));
+        if (searchTerm.length > 0 || status) {
+            dispatch(
+                searchSeatByTerm({ searchTerm: debouncedSearchTerm, status })
+            );
         }
-    }, [searchTerm, status]);
+    }, [debouncedSearchTerm, status, dispatch]);
 
     return (
         <div className="p-6 lg:p-8">
@@ -231,7 +236,7 @@ const ManageSeats = () => {
                         <option value="all">All Status</option>
                         <option value="AVAILABLE">Available</option>
                         <option value="OCCUPIED">Occupied</option>
-                        <option value="maintenance">Maintenance</option>
+                        <option value="MAINTENANCE">Maintenance</option>
                     </select>
                     <button
                         className="bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-6 rounded-lg font-semibold hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center space-x-2"
@@ -328,9 +333,9 @@ const ManageSeats = () => {
                                     <button className="flex-1 p-2 text-[#00B5E2] hover:bg-[#00B5E2] hover:text-white rounded-lg transition-all duration-200">
                                         <Edit className="w-4 h-4 mx-auto" />
                                     </button>
-                                    <button className="flex-1 p-2 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200">
+                                    {/* <button className="flex-1 p-2 text-[#39B54A] hover:bg-[#39B54A] hover:text-white rounded-lg transition-all duration-200">
                                         <Users className="w-4 h-4 mx-auto" />
-                                    </button>
+                                    </button> */}
                                     <button
                                         className="flex-1 p-2 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200 "
                                         onClick={() => {

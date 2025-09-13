@@ -119,7 +119,7 @@ const AdminOverview = () => {
         if (seatOperationError) {
             showError(seatOperationError);
         }
-    }, [seatOperationError, showError]);
+    }, [seatOperationError]);
 
     useEffect(() => {
         if (assignmentError) {
@@ -436,11 +436,12 @@ const AdminOverview = () => {
                                     onChange={handleSeatFormChange}
                                     className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
                                 >
-                                    <option value="available">Available</option>
-                                    <option value="maintenance">
+                                    <option value="AVAILABLE">Available</option>
+                                    <option value="OCCUPIED">Occupied</option>
+                                    <option value="MAINTENANCE">
                                         Maintenance
                                     </option>
-                                    <option value="occupied">Occupied</option>
+                                    
                                 </select>
                             </div>
                             <div className="flex space-x-4 mt-8">

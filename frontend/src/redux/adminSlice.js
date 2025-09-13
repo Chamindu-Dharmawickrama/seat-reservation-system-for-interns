@@ -19,6 +19,8 @@ export const fetchSeats = createAsyncThunk(
 );
 
 //search seat by search term and if there any filters apply search by it also
+// search seats by query
+//the GET has not request body, so the params become query
 export const searchSeatByTerm = createAsyncThunk(
     "admin/searchSeatByTerm",
     async ({ searchTerm, status }, { rejectWithValue }) => {
@@ -26,7 +28,7 @@ export const searchSeatByTerm = createAsyncThunk(
             const response = await api.get(`/seats/searchSeat`, {
                 params: { seatNumber: searchTerm, status },
             });
-            console.log(response.data.data)
+            console.log(response.data.data);
             return response.data.data;
         } catch (error) {
             return rejectWithValue(
@@ -37,6 +39,7 @@ export const searchSeatByTerm = createAsyncThunk(
 );
 
 //add new seat
+//send the data through request body
 export const addSeat = createAsyncThunk(
     "admin/addSeat",
     async (seatData, { rejectWithValue }) => {
@@ -52,11 +55,12 @@ export const addSeat = createAsyncThunk(
 );
 
 //update seat information
+//id send through the request params and data send through the request body
 export const updateSeat = createAsyncThunk(
     "admin/updateSeat",
     async ({ id, seatData }, { rejectWithValue }) => {
         try {
-            const response = await api.put(`/admin/seats/${id}`, seatData);
+            const response = await api.put(`/seats/updateSeat/${id}`, seatData);
             return response.data;
         } catch (error) {
             return rejectWithValue(
@@ -67,6 +71,7 @@ export const updateSeat = createAsyncThunk(
 );
 
 //delete seat
+//id send through the request params
 export const deleteSeat = createAsyncThunk(
     "admin/deleteSeat",
     async (seatId, { rejectWithValue }) => {
@@ -409,6 +414,11 @@ const adminSlice = createSlice({
             state.emailsError = null;
             state.emailsSuccess = null;
         },
+        resetDeleteOperation: (state) => {
+            state.deletingSeat = false;
+            state.deleteSeatError = null;
+            state.deleteSuccess = false;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -721,5 +731,6 @@ export const {
     resetSeatOperation,
     resetAssignment,
     resetEmailOperation,
+    resetDeleteOperation
 } = adminSlice.actions;
 export default adminSlice.reducer;
