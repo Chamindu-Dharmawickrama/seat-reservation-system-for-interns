@@ -2,12 +2,13 @@ import React, { lazy, Suspense } from "react";
 import Home from "./pages/home/home";
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/login/login";
-import InternDashboard from "./pages/dashboards/intern/internDashboard";
 import AdminDashboard from "./pages/dashboards/admin/adminDashboard";
 import InternRegister from "./pages/register/internRegister";
 import NotFound from "./pages/error/NotFound";
 import "./App.css";
 import AdminDashboardBackup from "./pages/dashboards/admin/backup";
+import BackUpInternDashboard from "./pages/dashboards/intern/backup";
+import InternDashboard from "./pages/dashboards/intern/internDashboard";
 
 // Lazy loading used for admin Dashboard
 const AdminOverview = lazy(() =>
@@ -29,7 +30,10 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/internDashboard" element={<InternDashboard />} />
+            <Route
+                path="/backUpInternDashboard"
+                element={<BackUpInternDashboard />}
+            />
             <Route path="/signUp" element={<InternRegister />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/backup" element={<AdminDashboardBackup />} />
@@ -138,6 +142,9 @@ const App = () => {
                     }
                 />
             </Route>
+
+            {/* Intern routes */}
+            <Route path="internDashboard" element={<InternDashboard />}></Route>
         </Routes>
     );
 };
