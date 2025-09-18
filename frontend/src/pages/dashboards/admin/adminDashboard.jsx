@@ -202,6 +202,7 @@ const AdminDashboard = () => {
                             </nav>
                         </div>
                     </div>
+                    
                     {/* components */}
                     <section className=" bg-white rounded-b-xl sm:rounded-b-2xl ">
                         <Outlet />

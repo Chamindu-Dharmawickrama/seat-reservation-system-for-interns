@@ -25,6 +25,14 @@ const RegisteredEmails = lazy(() =>
     import("./pages/dashboards/admin/registeredEmails")
 );
 
+// lazy loading for internship dashboard
+const AvailableSeats = lazy(() =>
+    import("./pages/dashboards/intern/availableSeat")
+);
+const MyReservations = lazy(() =>
+    import("./pages/dashboards/intern/myReservation")
+);
+
 const App = () => {
     return (
         <Routes>
@@ -144,7 +152,37 @@ const App = () => {
             </Route>
 
             {/* Intern routes */}
-            <Route path="internDashboard" element={<InternDashboard />}></Route>
+            <Route path="internDashboard" element={<InternDashboard />}>
+                <Route
+                    index
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <AvailableSeats />
+                        </Suspense>
+                    }
+                />
+
+                <Route
+                    path="myReservation"
+                    element={
+                        <Suspense
+                            fallback={
+                                <div className="min-h-[80vh] flex text-center justify-center pt-28 text-gray-500">
+                                    <div className="loader"></div>
+                                </div>
+                            }
+                        >
+                            <MyReservations />
+                        </Suspense>
+                    }
+                />
+            </Route>
         </Routes>
     );
 };

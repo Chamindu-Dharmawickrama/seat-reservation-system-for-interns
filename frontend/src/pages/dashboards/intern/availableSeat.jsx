@@ -1,9 +1,11 @@
-import React from 'react'
+import React from "react";
 
 const availableSeat = () => {
-  return (
-    <div>availableSeat</div>
-  )
-}
+    return (
+        <div className="p-6 lg:p-8">
+          Available Seat
+        </div>
+    );
+};
 
-export default availableSeat
+export default availableSeat;
