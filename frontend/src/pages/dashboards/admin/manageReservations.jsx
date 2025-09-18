@@ -160,7 +160,7 @@ const ManageReservations = () => {
                             Search by Intern
                         </label>
                         <div className="relative">
-                            <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+                            <Search className="w-5 h-5 absolute left-3 mt-1 ml-1 mr-1 top-3 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Search by intern name or ID..."
