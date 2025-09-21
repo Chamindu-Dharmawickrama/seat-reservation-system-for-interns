@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, Calendar, MapPin, Plus } from "lucide-react";
+import { Search, Calendar, MapPin, Plus, Clock } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSeats, searchSeatByTerm } from "../../../redux/seatSlice";
 import useDebounce from "../../../hooks/useDebounce";
@@ -7,6 +7,7 @@ import useDebounce from "../../../hooks/useDebounce";
 const AvailableSeat = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [status, setStatus] = useState("all");
+
     const dispatch = useDispatch();
 
     const { seats, seatsLoading, seatsError } = useSelector(
@@ -40,6 +41,51 @@ const AvailableSeat = () => {
             );
         }
     }, [debouncedSearchTerm, status, dispatch]);
+
+    // make reservation
+    const [showBookingModal, setShowBookingModal] = useState(false);
+    const [selectedSeat, setSelectedSeat] = useState(null);
+
+    // booking form
+    const [bookingForm, setBookingForm] = useState({
+        userId: "",
+        seatId: "",
+        date: "",
+        time: "FULLDAY",
+        purpose: "",
+        status: "OCCUPIED",
+    });
+
+    // open reservation make form
+    const handleSeatBook = (seat) => {
+        setSelectedSeat(seat);
+        setShowBookingModal(true);
+        setBookingForm((prev) => ({
+            ...prev,
+            seatId: seat.id,
+        }));
+    };
+
+    // update the reservation
+    const handleChangeReservation = (e) => {
+        setBookingForm({
+            ...bookingForm,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    // submit reservation
+    const handleBookingConfirm = async (e) => {
+        try {
+            e.preventDefault();
+            // create this function - makeReservation
+            await dispatch(makeReservation(bookingForm));
+            setShowBookingModal(false);
+            setSelectedSeat(null);
+        } catch (error) {}
+    };
+
+    console.log(bookingForm);
 
     return (
         <div className="p-6 lg:p-8">
@@ -160,7 +206,7 @@ const AvailableSeat = () => {
                             </div>
                             {seat.status === "AVAILABLE" && (
                                 <button
-                                    //onClick={() => handleSeatBook(seat)}
+                                    onClick={() => handleSeatBook(seat)}
                                     className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-3 px-4 rounded-lg font-semibold text-base hover:from-[#004080] hover:to-[#0099CC] transition-all duration-300 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
                                 >
                                     <Plus className="w-4 h-4" />
@@ -185,6 +231,101 @@ const AvailableSeat = () => {
                             )}
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Booking Modal */}
+            {showBookingModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-lg shadow-xl border border-white/20 transform transition-all duration-300">
+                        <div className="text-center mb-6">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#0057A8] to-[#00B5E2] rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <Plus className="w-6 h-6 text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                                Book Seat {selectedSeat?.seatNumber}
+                            </h3>
+                            <p className="text-base text-gray-600">
+                                Reserve your workspace for the selected date and
+                                time
+                            </p>
+                        </div>
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    <Calendar className="w-4 h-4 inline mr-2" />
+                                    Date
+                                </label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={bookingForm.date}
+                                    onChange={handleChangeReservation}
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2] transition-all duration-200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    <Clock className="w-4 h-4 inline mr-2" />
+                                    Time Slot
+                                </label>
+                                <select
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2] transition-all duration-200"
+                                    name="time"
+                                    value={bookingForm.time}
+                                    onChange={handleChangeReservation}
+                                >
+                                    <option value="FULLDAY">
+                                        09:00 AM - 05:00 PM (Full Day)
+                                    </option>
+                                    <option value="MORNING">
+                                        09:00 AM - 01:00 PM (Morning)
+                                    </option>
+                                    <option value="AFTERNOON">
+                                        01:00 PM - 05:00 PM (Afternoon)
+                                    </option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-base font-semibold text-gray-800 mb-2">
+                                    Purpose (Optional)
+                                </label>
+                                <textarea
+                                    className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2] transition-all duration-200 resize-none"
+                                    rows="3"
+                                    placeholder="Meeting, project work, training session, etc."
+                                    name="purpose"
+                                    value={bookingForm.purpose}
+                                    onChange={handleChangeReservation}
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div className="flex space-x-4 mt-8">
+                            <button
+                                onClick={() => {
+                                    setShowBookingModal(false);
+                                    setBookingForm({
+                                        userId: "",
+                                        seatId: "",
+                                        date: "",
+                                        time: "FULLDAY",
+                                        purpose: "",
+                                        status: "OCCUPIED",
+                                    });
+                                    setSelectedSeat(null);
+                                }}
+                                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleBookingConfirm}
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg"
+                            >
+                                Confirm Booking
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

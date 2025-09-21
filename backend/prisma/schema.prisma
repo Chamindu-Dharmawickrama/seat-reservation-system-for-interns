@@ -75,8 +75,7 @@ model Reservation {
   userId     String
   seatId     String
   date       DateTime
-  startTime  DateTime
-  endTime    DateTime
+  time       TimeSlot @default(FULLDAY)
   status     ReservationStatus @default(ACTIVE)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -85,7 +84,7 @@ model Reservation {
   user User @relation(fields: [userId], references: [id])
   seat Seat @relation(fields: [seatId], references: [id])
 
-  @@unique([seatId, date, startTime, endTime])
+  @@unique([seatId, date])
   @@map("reservations")
 }
 
@@ -93,4 +92,10 @@ enum ReservationStatus {
   ACTIVE
   CANCELLED
   COMPLETED
+}
+
+enum TimeSlot {
+  FULLDAY
+  MORNING
+  AFTERNOON
 }
