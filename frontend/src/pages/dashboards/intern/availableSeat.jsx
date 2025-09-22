@@ -3,6 +3,8 @@ import { Search, Calendar, MapPin, Plus, Clock } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSeats, searchSeatByTerm } from "../../../redux/seatSlice";
 import useDebounce from "../../../hooks/useDebounce";
+import { clearErrors, makeReservation } from "../../../redux/reservationSlice";
+import { ToastContainer, useToast } from "../../../components/Toast";
 
 const AvailableSeat = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -13,6 +15,8 @@ const AvailableSeat = () => {
     const { seats, seatsLoading, seatsError } = useSelector(
         (state) => state.seats
     );
+    const { newReservationSuccess, reservationLoading, reservationError } =
+        useSelector((state) => state.reservation);
 
     useEffect(() => {
         dispatch(fetchSeats());
@@ -42,22 +46,27 @@ const AvailableSeat = () => {
         }
     }, [debouncedSearchTerm, status, dispatch]);
 
+    // notify service
+    const { toasts, removeToast, showSuccess, showError, showInfo } =
+        useToast();
+
     // make reservation
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedSeat, setSelectedSeat] = useState(null);
 
     // booking form
     const [bookingForm, setBookingForm] = useState({
-        userId: "",
+        userId: "12",
         seatId: "",
         date: "",
         time: "FULLDAY",
-        purpose: "",
-        status: "OCCUPIED",
+        purpose: null,
+        status: "ACTIVE",
     });
 
     // open reservation make form
     const handleSeatBook = (seat) => {
+        dispatch(clearErrors());
         setSelectedSeat(seat);
         setShowBookingModal(true);
         setBookingForm((prev) => ({
@@ -75,15 +84,26 @@ const AvailableSeat = () => {
     };
 
     // submit reservation
-    const handleBookingConfirm = async (e) => {
-        try {
-            e.preventDefault();
-            // create this function - makeReservation
-            await dispatch(makeReservation(bookingForm));
+    const handleBookingConfirm = (e) => {
+        e.preventDefault();
+        dispatch(makeReservation(bookingForm));
+    };
+
+    console.log("newReservationSuccess", newReservationSuccess);
+
+    useEffect(() => {
+        if (newReservationSuccess) {
             setShowBookingModal(false);
             setSelectedSeat(null);
-        } catch (error) {}
-    };
+            showSuccess("Reservation created successfully");
+        }
+    }, [newReservationSuccess]);
+
+    useEffect(() => {
+        if (reservationError) {
+            showError("Reservation Failed");
+        }
+    }, [reservationError]);
 
     console.log(bookingForm);
 
@@ -251,6 +271,11 @@ const AvailableSeat = () => {
                             </p>
                         </div>
                         <div className="space-y-6">
+                            {reservationError && (
+                                <div className="text-red-600 text-sm mb-2">
+                                    {reservationError}
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-base font-semibold text-gray-800 mb-2">
                                     <Calendar className="w-4 h-4 inline mr-2" />
@@ -305,14 +330,15 @@ const AvailableSeat = () => {
                                 onClick={() => {
                                     setShowBookingModal(false);
                                     setBookingForm({
-                                        userId: "",
+                                        userId: "12",
                                         seatId: "",
                                         date: "",
                                         time: "FULLDAY",
                                         purpose: "",
-                                        status: "OCCUPIED",
+                                        status: "ACTIVE",
                                     });
                                     setSelectedSeat(null);
+                                    dispatch(clearErrors());
                                 }}
                                 className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
                             >
@@ -328,6 +354,9 @@ const AvailableSeat = () => {
                     </div>
                 </div>
             )}
+
+            {/* Toast Container */}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
     );
 };

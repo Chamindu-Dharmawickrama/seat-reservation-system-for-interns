@@ -1,8 +1,8 @@
-import DB from "../config/db";
-import { errorResponse, successResponse } from "../utils/response";
+import DB from "../config/db.js";
+import { errorResponse, successResponse } from "../utils/response.js";
 
 // get all reservations
-export const getAllReservations = async (req, res) => {
+export const fetchAllReservations = async (req, res) => {
     try {
         const allReservations = await DB.reservation.findMany();
         return successResponse(res, "All reservations", allReservations, 200);
@@ -18,9 +18,30 @@ export const getAllReservations = async (req, res) => {
 // make a reservation
 export const makeReservation = async (req, res) => {
     try {
-        const { userId, seatId, date, time, purpose } = req.body;
+        const { userId, seatId, date, time, purpose, status } = req.body;
 
-        const reservation = await DB.reservation.create({});
+        if (!userId || !seatId || !date || !time || !status)
+            return errorResponse(
+                res,
+                "Missing required fields",
+                undefined,
+                400
+            );
+
+        const formattedDate = new Date(date).toISOString();
+
+        const reservationData = {
+            userId,
+            seatId,
+            date: formattedDate,
+            time,
+            purpose,
+            status,
+        };
+
+        const reservation = await DB.reservation.create({
+            data: reservationData,
+        });
 
         return successResponse(res, "Reservation palced");
     } catch (error) {
@@ -29,5 +50,35 @@ export const makeReservation = async (req, res) => {
             "Failed to make a reservation",
             error.message
         );
+    }
+};
+
+// delete reservation
+export const deleteReservation = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!id || typeof id !== "string")
+            return errorResponse(res, "Invalid Id", undefined, 400);
+
+        //existing reservation?
+        const existingReservation = await DB.reservation.findUnique({
+            where: {
+                id,
+            },
+        });
+        if (!existingReservation) {
+            return errorResponse(res, "Reservation not found", undefined, 404);
+        }
+
+        const deletedReservation = await DB.reservation.delete({
+            where: {
+                id,
+            },
+        });
+
+        return successResponse(res, "Reservation deleted ", deletedReservation);
+    } catch (error) {
+        return errorResponse(res, error.message, error);
     }
 };

@@ -16,9 +16,6 @@ export const searchSeat = async (req, res) => {
     try {
         const { seatNumber, status } = req.query;
 
-        console.log(seatNumber);
-        console.log(status);
-
         // Build dynamic filter object
         const filter = {};
 
@@ -34,8 +31,6 @@ export const searchSeat = async (req, res) => {
         if (status && status !== "all") {
             filter.status = status;
         }
-
-        console.log("Filter ", filter);
 
         const seats = await DB.seat.findMany({
             where: filter,

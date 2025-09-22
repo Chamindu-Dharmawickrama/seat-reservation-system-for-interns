@@ -192,7 +192,7 @@ const ManageSeats = () => {
     // handle Error delete state
     useEffect(() => {
         if (deleteError) {
-            showSuccess("Seat deleted not successfully!");
+            showError("Seat deleted not successfully!");
             dispatch(resetDeleteOperation());
         }
     }, [deleteError, dispatch]);

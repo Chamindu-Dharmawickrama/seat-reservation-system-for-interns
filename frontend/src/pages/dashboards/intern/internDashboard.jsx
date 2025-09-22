@@ -35,7 +35,7 @@ const InternDashboard = () => {
                                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 w-full text-center">
                                         {/* <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" /> */}
                                         <span className="text-xs sm:text-base  text-center">
-                                            Available Seat
+                                            Seats
                                         </span>
                                     </div>
                                 </NavLink>
@@ -53,7 +53,7 @@ const InternDashboard = () => {
                                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-1 sm:space-y-0 sm:space-x-2 w-full text-center">
                                         {/* <MapPin className="w-4 h-4 sm:w-5 sm:h-5" /> */}
                                         <span className="text-xs sm:text-base text-center">
-                                            Manage Seats
+                                            Your Reservations
                                         </span>
                                     </div>
                                 </NavLink>
