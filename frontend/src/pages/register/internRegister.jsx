@@ -8,8 +8,11 @@ import {
     Phone,
     Building,
     Calendar,
+    Loader2,
 } from "lucide-react";
 import { Layouts } from "../../layouts/layouts";
+import { useDispatch, useSelector } from "react-redux";
+import { clearErrors, register } from "../../redux/registerSlice";
 
 const InternRegister = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +32,14 @@ const InternRegister = () => {
         confirmPassword: "",
     });
 
+    const { registeredData, error, loading, success } = useSelector(
+        (state) => state.register.register
+    );
+
+    const dispatch = useDispatch();
+
     const handleInputChange = (e) => {
+        dispatch(clearErrors());
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -39,8 +49,11 @@ const InternRegister = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log("Registration data:", formData);
+        dispatch(register(formData));
     };
+
+    console.log("Registration data:", formData);
+    console.log(error);
 
     return (
         <Layouts>
@@ -96,6 +109,13 @@ const InternRegister = () => {
                                 <p className="text-gray-600">
                                     Fill in your details to get started
                                 </p>
+                                {error && (
+                                    <div className="flex justify-center ">
+                                        <p className="text-red-700 text-[16px] mt-3">
+                                            {error}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-5">
@@ -361,8 +381,11 @@ const InternRegister = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-4 px-4 rounded-lg font-semibold text-lg hover:from-[#004080] hover:to-[#0099CC] focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:ring-offset-2 transition-all duration-300 active:transform active:scale-95 shadow-lg hover:shadow-xl"
+                                    className="w-full flex items-center justify-center bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white py-4 px-4 rounded-lg font-semibold text-lg hover:from-[#004080] hover:to-[#0099CC] focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:ring-offset-2 transition-all duration-300 active:transform active:scale-95 shadow-lg hover:shadow-xl"
                                 >
+                                    {loading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin mr-3 mt-[0.5]" />
+                                    ) : null}
                                     Create Account
                                 </button>
                             </form>

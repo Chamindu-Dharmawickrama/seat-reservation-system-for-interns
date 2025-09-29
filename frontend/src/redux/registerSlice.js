@@ -4,12 +4,12 @@ import api from "../utils/api";
 // user register
 export const register = createAsyncThunk(
     "register",
-    async (data, { rejectedWithValues }) => {
+    async (data, { rejectWithValue }) => {
         try {
             const response = await api.post("/register", data);
             return response.data;
         } catch (error) {
-            return rejectedWithValues(
+            return rejectWithValue(
                 error.response?.data?.message || "Registration failed!"
             );
         }

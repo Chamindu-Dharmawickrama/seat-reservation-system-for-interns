@@ -1,12 +1,37 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import workingImage from "../../assets/working-image.png";
 import { Layouts } from "../../layouts/layouts";
-
-// const loginLoading = useSelector((state) => state.login.loginLoading);
-// const loginError = useSelector((state) => state.login.loginError);
-// const user = useSelector((state) => state.login.user);
+import { clearErrors, loginFunction } from "../../redux/loginSlice";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
+    const { loginLoading, loginError, user } = useSelector(
+        (state) => state.login
+    );
+
+    const [loginForm, setLoginForm] = useState({
+        username: "",
+        password: "",
+    });
+
+    const dispatch = useDispatch();
+
+    const handleOnchange = (e) => {
+        dispatch(clearErrors())
+        setLoginForm({
+            ...loginForm, //don’t accidentally wipe out the rest of the object when updating a single field
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const handleLogin = (e) => {
+        e.preventDefault(); //stops that default page reload,
+        dispatch(loginFunction(loginForm));
+    };
+
+    const handleLoginSuccees = () => {};
+
     return (
         <Layouts>
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#b1c3d3] to-[#a9bfa2] p-4 sm:p-6 lg:p-8">
@@ -31,22 +56,39 @@ const Login = () => {
                             <h2 className="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-6 sm:mb-8">
                                 Login
                             </h2>
-                            <form className="space-y-4 sm:space-y-5">
+                            {loginError && (
+                                <div className="flex justify-center ">
+                                    <p className="text-red-700 text-[16px] mb-4">
+                                        {loginError}
+                                    </p>
+                                </div>
+                            )}
+                            <form
+                                className="space-y-4 sm:space-y-5 "
+                                onSubmit={handleLogin}
+                            >
                                 <input
                                     type="text"
                                     placeholder="Username"
+                                    name="username"
+                                    onChange={handleOnchange}
                                     className="w-full px-4 py-3 sm:py-4 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2] focus:border-transparent transition-all duration-200"
                                 />
                                 <input
                                     type="password"
                                     placeholder="Password"
+                                    name="password"
+                                    onChange={handleOnchange}
                                     className="w-full px-4 py-3 sm:py-4 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#39B54A] focus:border-transparent transition-all duration-200"
                                 />
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#0057A8] text-white py-3 sm:py-4 px-4 rounded-lg font-medium text-base hover:bg-[#004080] focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:ring-offset-2 transition duration-300 active:transform active:scale-95"
+                                    className="w-full flex items-center justify-center bg-[#0057A8] text-white py-3 sm:py-4 px-4 rounded-lg text-[19px] hover:bg-[#004080] focus:outline-none focus:ring-2 focus:ring-[#0057A8] focus:ring-offset-2 transition duration-300 active:transform active:scale-95 cursor-pointer"
                                 >
+                                    {loginLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin mr-2 mt-[0.5]" />
+                                    ) : null}
                                     Login
                                 </button>
                             </form>

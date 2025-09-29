@@ -1,31 +1,40 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import api from "../utils/api.js";
 
 const API_BASE_URL = "/api/v2/";
 
 //login function
-export const loginFunction = createAsyncThunk("login", async () => {
+export const loginFunction = createAsyncThunk(
+    "login",
     async (loginData, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/login`, {
+            const response = await api.post(`/login`, {
                 ...loginData,
             });
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response.data);
+            return rejectWithValue(
+                error.response?.data?.message || "Login failed!"
+            );
         }
-    };
-});
+    }
+);
 
 const initialState = {
     user: [],
-    loginError: false,
+    loginError: null,
     loginLoading: false,
 };
 
 const loginSlice = createSlice({
     name: "login",
     initialState,
+    reducers: {
+        clearErrors: (state) => {
+            state.loginError = null;
+        },
+    },
 
     extraReducers: (builder) => {
         builder
@@ -44,4 +53,5 @@ const loginSlice = createSlice({
     },
 });
 
+export const { clearErrors } = loginSlice.actions;
 export default loginSlice.reducer;
