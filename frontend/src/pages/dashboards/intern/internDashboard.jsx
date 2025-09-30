@@ -1,7 +1,20 @@
-import { Outlet,NavLink } from "react-router-dom";
+import { Outlet, NavLink, Navigate } from "react-router-dom";
 import { Layouts } from "../../../layouts/layouts";
 
 const InternDashboard = () => {
+    
+    // check is there any INTERN  token
+    const token = localStorage.getItem("token");
+    if (!token) {
+        return <Navigate to="/login" />;
+    }
+
+    // decode the token and get user role
+    const role = JSON.parse(atob(token.split(".")[1]))?.role;
+    if (role !== "INTERN") {
+        return <Navigate to="/login" />;
+    }
+
     return (
         <Layouts>
             <div className="min-h-screen bg-gradient-to-br from-[#b1c3d3] via-[#a8c0b8] to-[#a9bfa2]">

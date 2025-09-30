@@ -1,5 +1,4 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
 import api from "../utils/api.js";
 
 const API_BASE_URL = "/api/v2/";
@@ -9,7 +8,7 @@ export const loginFunction = createAsyncThunk(
     "login",
     async (loginData, { rejectWithValue }) => {
         try {
-            const response = await api.post(`/login`, {
+            const response = await api.post(`/auth/login`, {
                 ...loginData,
             });
             return response.data;
@@ -25,6 +24,7 @@ const initialState = {
     user: [],
     loginError: null,
     loginLoading: false,
+    role:null
 };
 
 const loginSlice = createSlice({
@@ -45,6 +45,10 @@ const loginSlice = createSlice({
             .addCase(loginFunction.fulfilled, (state, action) => {
                 state.loginLoading = false;
                 state.user = action.payload; //the login output
+                console.log(action.payload.data.token)
+                state.role = action.payload.data.user.role
+                // token save to the local storaage
+                localStorage.setItem("token", action.payload.data.token)
             })
             .addCase(loginFunction.rejected, (state, action) => {
                 state.loginLoading = false;

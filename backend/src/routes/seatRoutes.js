@@ -6,12 +6,13 @@ import {
     searchSeat,
     updateSeat,
 } from "../controllers/seatController.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const seatRouter = Router();
 
 // Get All seats
-seatRouter.get("/", getAllSeats);
-seatRouter.post("/addSeat", addNewSeat);
+seatRouter.get("/",  getAllSeats);
+seatRouter.post("/addSeat", authenticate, addNewSeat);
 seatRouter.delete("/delete/:id", deleteSeat);
 seatRouter.get("/searchSeat", searchSeat);
 seatRouter.put("/updateSeat/:id", updateSeat)

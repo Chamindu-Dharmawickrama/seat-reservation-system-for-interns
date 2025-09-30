@@ -2,11 +2,12 @@ import { useDispatch, useSelector } from "react-redux";
 import workingImage from "../../assets/working-image.png";
 import { Layouts } from "../../layouts/layouts";
 import { clearErrors, loginFunction } from "../../redux/loginSlice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-    const { loginLoading, loginError, user } = useSelector(
+    const { loginLoading, loginError, user ,role } = useSelector(
         (state) => state.login
     );
 
@@ -18,7 +19,7 @@ const Login = () => {
     const dispatch = useDispatch();
 
     const handleOnchange = (e) => {
-        dispatch(clearErrors())
+        dispatch(clearErrors());
         setLoginForm({
             ...loginForm, //don’t accidentally wipe out the rest of the object when updating a single field
             [e.target.name]: e.target.value,
@@ -29,6 +30,19 @@ const Login = () => {
         e.preventDefault(); //stops that default page reload,
         dispatch(loginFunction(loginForm));
     };
+
+    const navigate = useNavigate();
+
+    // after log according to the user redirect relevant url
+    useEffect(() => {
+        if (role === "ADMIN") {
+            navigate("/adminDashboard");
+        } else if (role === "INTERN") {
+            navigate("/internDashboard");
+        }
+    }, [role, navigate]);
+
+    console.log("user", role)
 
     const handleLoginSuccees = () => {};
 

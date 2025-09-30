@@ -7,7 +7,7 @@ import {
     Building,
 } from "lucide-react";
 import { Layouts } from "../../../layouts/layouts";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDashboardStats } from "../../../redux/adminSlice";
@@ -24,6 +24,18 @@ const AdminDashboard = () => {
     useEffect(() => {
         dispatch(fetchDashboardStats());
     }, [dispatch]);
+
+    // check is there any admin token
+    const token = localStorage.getItem("token");
+    if (!token) {
+        return <Navigate to="/login" />;
+    }
+
+    // decode the token and get user role
+    const role = JSON.parse(atob(token.split(".")[1]))?.role;
+    if (role !== "ADMIN") {
+        return <Navigate to="/login" />;
+    }
 
     return (
         <Layouts>
@@ -202,7 +214,7 @@ const AdminDashboard = () => {
                             </nav>
                         </div>
                     </div>
-                    
+
                     {/* components */}
                     <section className=" bg-white rounded-b-xl sm:rounded-b-2xl ">
                         <Outlet />
