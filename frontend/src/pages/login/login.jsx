@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-    const { loginLoading, loginError, user ,role } = useSelector(
+    const { loginLoading, loginError, user, role } = useSelector(
         (state) => state.login
     );
 
@@ -35,6 +35,7 @@ const Login = () => {
 
     // after log according to the user redirect relevant url
     useEffect(() => {
+        if (!role) return;
         if (role === "ADMIN") {
             navigate("/adminDashboard");
         } else if (role === "INTERN") {
@@ -42,7 +43,7 @@ const Login = () => {
         }
     }, [role, navigate]);
 
-    console.log("user", role)
+    //console.log("user", role)
 
     const handleLoginSuccees = () => {};
 

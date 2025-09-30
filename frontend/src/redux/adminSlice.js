@@ -92,7 +92,7 @@ export const fetchReservations = createAsyncThunk(
     "admin/fetchReservations",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/reservations");
+            const response = await api.get("/reservations");
             return response.data;
         } catch (error) {
             return rejectWithValue(

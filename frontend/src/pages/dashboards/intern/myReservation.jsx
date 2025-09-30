@@ -12,39 +12,13 @@ const MyReservation = () => {
     const dispatch = useDispatch();
 
     const {
+        reservations,
         reservationLoading,
         reservationError,
         deleteReservationLoading,
         deleteReservationSuccess,
         deleteReservationError,
     } = useSelector((state) => state.reservation);
-
-    const reservations = [
-        {
-            id: 1,
-            seatNumber: "A01",
-            date: "2025-08-28",
-            time: "09:00 AM - 05:00 PM",
-            status: "active",
-            floor: "1st Floor",
-        },
-        {
-            id: 2,
-            seatNumber: "B02",
-            date: "2025-08-29",
-            time: "09:00 AM - 05:00 PM",
-            status: "upcoming",
-            floor: "2nd Floor",
-        },
-        {
-            id: 3,
-            seatNumber: "A03",
-            date: "2025-08-25",
-            time: "09:00 AM - 05:00 PM",
-            status: "completed",
-            floor: "1st Floor",
-        },
-    ];
 
     useEffect(() => {
         dispatch(fetchAllReservations());

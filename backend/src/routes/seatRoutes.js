@@ -6,15 +6,20 @@ import {
     searchSeat,
     updateSeat,
 } from "../controllers/seatController.js";
-import { authenticate } from "../middleware/authMiddleware.js";
+import { authenticate, authorize } from "../middleware/authMiddleware.js";
 
 const seatRouter = Router();
 
 // Get All seats
-seatRouter.get("/",  getAllSeats);
-seatRouter.post("/addSeat", authenticate, addNewSeat);
-seatRouter.delete("/delete/:id", deleteSeat);
-seatRouter.get("/searchSeat", searchSeat);
-seatRouter.put("/updateSeat/:id", updateSeat)
+seatRouter.get("/", authenticate, authorize(["INTERN", "ADMIN"]), getAllSeats);
+seatRouter.post("/addSeat", authenticate, authorize("ADMIN"), addNewSeat);
+seatRouter.delete("/delete/:id", authenticate, authorize("ADMIN"), deleteSeat);
+seatRouter.get(
+    "/searchSeat",
+    authenticate,
+    authorize(["INTERN", "ADMIN"]),
+    searchSeat
+);
+seatRouter.put("/updateSeat/:id", authenticate, authorize("ADMIN"), updateSeat);
 
 export default seatRouter;

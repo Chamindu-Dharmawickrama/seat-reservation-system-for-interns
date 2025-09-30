@@ -24,7 +24,7 @@ const initialState = {
     user: [],
     loginError: null,
     loginLoading: false,
-    role:null
+    role: null,
 };
 
 const loginSlice = createSlice({
@@ -33,6 +33,13 @@ const loginSlice = createSlice({
     reducers: {
         clearErrors: (state) => {
             state.loginError = null;
+        },
+        logout: (state) => {
+            state.user = [];
+            state.role = null;
+            state.loginError = null;
+            state.loginLoading = false;
+            localStorage.removeItem("token");
         },
     },
 
@@ -45,10 +52,10 @@ const loginSlice = createSlice({
             .addCase(loginFunction.fulfilled, (state, action) => {
                 state.loginLoading = false;
                 state.user = action.payload; //the login output
-                console.log(action.payload.data.token)
-                state.role = action.payload.data.user.role
+                console.log(action.payload.data.token);
+                state.role = action.payload.data.user.role;
                 // token save to the local storaage
-                localStorage.setItem("token", action.payload.data.token)
+                localStorage.setItem("token", action.payload.data.token);
             })
             .addCase(loginFunction.rejected, (state, action) => {
                 state.loginLoading = false;
@@ -57,5 +64,5 @@ const loginSlice = createSlice({
     },
 });
 
-export const { clearErrors } = loginSlice.actions;
+export const { clearErrors, logout } = loginSlice.actions;
 export default loginSlice.reducer;

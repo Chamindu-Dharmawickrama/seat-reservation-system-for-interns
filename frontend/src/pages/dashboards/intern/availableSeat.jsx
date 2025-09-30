@@ -54,9 +54,14 @@ const AvailableSeat = () => {
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedSeat, setSelectedSeat] = useState(null);
 
+    // get user id
+    const token = localStorage.getItem("token");
+    const user_id = JSON.parse(atob(token.split(".")[1]))?.id
+    console.log("User ID ",user_id)
+
     // booking form
     const [bookingForm, setBookingForm] = useState({
-        userId: "12",
+        userId: user_id,
         seatId: "",
         date: "",
         time: "FULLDAY",
@@ -330,7 +335,7 @@ const AvailableSeat = () => {
                                 onClick={() => {
                                     setShowBookingModal(false);
                                     setBookingForm({
-                                        userId: "12",
+                                        userId: user_id,
                                         seatId: "",
                                         date: "",
                                         time: "FULLDAY",

@@ -4,8 +4,23 @@ import { errorResponse, successResponse } from "../utils/response.js";
 // get all reservations
 export const fetchAllReservations = async (req, res) => {
     try {
-        const allReservations = await DB.reservation.findMany();
-        return successResponse(res, "All reservations", allReservations, 200);
+        const { user } = req;
+        if (user.role === "ADMIN") {
+            const allReservations = await DB.reservation.findMany();
+            return successResponse(
+                res,
+                "All reservations",
+                allReservations,
+                200
+            );
+        } else {
+            const myReservations = await DB.reservation.findMany({
+                where: {
+                    userId: user.id,
+                },
+            });
+            return successResponse(res, "My reservations", myReservations, 200);
+        }
     } catch (error) {
         return errorResponse(
             res,
