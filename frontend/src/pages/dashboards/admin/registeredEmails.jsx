@@ -4,6 +4,7 @@ import {
     clearErrors,
     fetchAllRegisteredEmails,
     registerNewEmail,
+    resetEmailOperation
 } from "../../../redux/adminSlice";
 import { AlertCircle, X, Loader2, Mail } from "lucide-react";
 import { ToastContainer, useToast } from "../../../components/Toast";
@@ -16,16 +17,18 @@ const RegisteredEmails = () => {
 
     useEffect(() => {
         dispatch(fetchAllRegisteredEmails());
-    }, []);
+    }, [dispatch]);
 
     const { emails, emailsLoading, emailsError, emailsSuccess } = useSelector(
         (state) => state.admin
     );
 
+    console.log("emials", emails)
+
     const [showRegisterEmailModal, setShowRegisterEmailModal] = useState(false);
 
     const [emailForm, setEmailForm] = useState({
-        id: "",
+        traineeId: "",
         email: "",
     });
 
@@ -51,7 +54,7 @@ const RegisteredEmails = () => {
 
     const resetEmailForm = () => {
         setEmailForm({
-            id: "",
+            traineeId: "",
             email: "",
         });
     };
@@ -61,15 +64,6 @@ const RegisteredEmails = () => {
         e.preventDefault();
         dispatch(registerNewEmail(emailForm));
     };
-
-    //mock emails
-    // const emails = [
-    //     { id: 1, email: "trainee1@example.com" },
-    //     { id: 2, email: "trainee2@example.com" },
-    //     { id: 3, email: "trainee3@example.com" },
-    // ];
-    // const emailsLoading = false;
-    // const emailsError = false;
 
     return (
         <div className="max-w-2xl mx-auto py-5 sm:py-5 px-0 sm:px-4">
@@ -168,9 +162,9 @@ const RegisteredEmails = () => {
                         ) : (
                             <tbody>
                                 {emails.map((email) => (
-                                    <tr className="hover:bg-gray-100 transition">
-                                        <td className="py-3 px-4">
-                                            {email.id}
+                                    <tr key={email.id}className="hover:bg-gray-100 transition">
+                                        <td cl assName="py-3 px-4">
+                                            {email.traineeId}
                                         </td>
                                         <td className="py-3 px-4">
                                             {email.email}
@@ -222,11 +216,11 @@ const RegisteredEmails = () => {
                                 <input
                                     className="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00B5E2]/30 focus:border-[#00B5E2]"
                                     type="text"
-                                    value={emailForm.id}
+                                    value={emailForm.traineeId}
                                     onChange={(e) =>
                                         setEmailForm({
                                             ...emailForm,
-                                            id: e.target.value,
+                                            traineeId: e.target.value,
                                         })
                                     }
                                 />
@@ -255,7 +249,7 @@ const RegisteredEmails = () => {
                                     onClick={() => {
                                         setShowRegisterEmailModal(false);
                                         resetEmailForm();
-                                        //dispatch(clearErrors());
+                                        dispatch(clearErrors());
                                         dispatch(resetEmailOperation());
                                     }}
                                     className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base cursor-pointer"

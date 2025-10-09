@@ -34,6 +34,7 @@ export const Navbar = () => {
     // destroy the session (logout)
     const destroySession = () => {
         dispatch(logout());
+        setIsLoged(false)
         navigate("/");
     };
 

@@ -12,6 +12,7 @@ export const connectDatabase = async () => {
         console.log("Database connection successful!");
         return true;
     } catch (error) {
+        console.log(error);
         console.log("Database connection not successful!");
         return false;
     }

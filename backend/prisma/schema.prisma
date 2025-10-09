@@ -40,6 +40,7 @@ enum Role{
 
 model AllowedEmail {
   id          String   @id @default(cuid())
+  traineeId   String?  @unique  
   email       String   @unique
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

@@ -234,8 +234,8 @@ export const fetchAllRegisteredEmails = createAsyncThunk(
     "admin/fetchAllRegisteredEmails",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/emails");
-            return response.data;
+            const response = await api.get("/allowedEmails");
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch emails"
@@ -249,7 +249,7 @@ export const registerNewEmail = createAsyncThunk(
     "admin/registerNewEmail",
     async (emailData, { rejectWithValue }) => {
         try {
-            const response = await api.post("/admin/emails", emailData);
+            const response = await api.post("/allowedEmails/addEmail", emailData);
             return response.data;
         } catch (error) {
             return rejectWithValue(

@@ -4,9 +4,11 @@ import { errorResponse, successResponse } from "../utils/response.js";
 // add allowed email
 export const addAllowedEmail = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, traineeId } = req.body;
 
         // validation
+        if (!traineeId)
+            return errorResponse(res, "TraineeId is requires", undefined, 400);
         if (!email)
             return errorResponse(res, "Email is required", undefined, 400);
 
@@ -31,6 +33,7 @@ export const addAllowedEmail = async (req, res) => {
         const allowedEmail = await DB.allowedEmail.create({
             data: {
                 email,
+                traineeId,
             },
         });
 
@@ -48,6 +51,7 @@ export const getAllowedEmails = async (req, res) => {
                 createdAt: "desc",
             },
         });
+
         return successResponse(
             res,
             "Allowed emails retrieved",
