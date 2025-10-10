@@ -15,6 +15,7 @@ const AvailableSeat = () => {
     const { seats, seatsLoading, seatsError } = useSelector(
         (state) => state.seats
     );
+
     const { newReservationSuccess, reservationLoading, reservationError } =
         useSelector((state) => state.reservation);
 
@@ -56,8 +57,8 @@ const AvailableSeat = () => {
 
     // get user id
     const token = localStorage.getItem("token");
-    const user_id = JSON.parse(atob(token.split(".")[1]))?.id
-    console.log("User ID ",user_id)
+    const user_id = JSON.parse(atob(token.split(".")[1]))?.id;
+    console.log("User ID ", user_id);
 
     // booking form
     const [bookingForm, setBookingForm] = useState({
@@ -151,29 +152,27 @@ const AvailableSeat = () => {
 
             {/* main content */}
             {seatsLoading ? (
-                <div className="flex items-center justify-center bg-gradient-to-r from-[#c2c2c2] to-[#949797] text-gray-700 px-6 py-8 shadow-md animate-pulse">
-                    <svg
-                        className="w-5 h-5 mr-2 animate-spin"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                    >
-                        <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                        ></circle>
-                        <path
-                            className="opacity-75"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 6v6l4 2"
-                        ></path>
-                    </svg>
-                    <span className="font-semibold">Loading Seats...</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-10">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="bg-white rounded-xl p-6 border border-gray-200/50 shadow-sm animate-pulse"
+                        >
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="h-6 bg-gray-300 rounded w-1/2"></div>
+                                <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+                            </div>
+                            <div className="flex items-center mb-4 space-x-2">
+                                <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
+                                <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+                            </div>
+                            <div className="flex items-center mb-4 space-x-2">
+                                <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
+                                <div className="h-4 bg-gray-300 rounded w-1/3"></div>
+                            </div>
+                            <div className="h-10 bg-gray-300 rounded-lg mt-4"></div>
+                        </div>
+                    ))}
                 </div>
             ) : seatsError ? (
                 <div
