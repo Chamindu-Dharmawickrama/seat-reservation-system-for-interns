@@ -24,7 +24,7 @@ server.use(
 // use rootRouter
 server.use("/api", rootRouter);
 
-//health check
+// health check
 server.get("/health", async (req, res) => {
     try {
         await DB.$queryRaw`SELECT 1`;
@@ -43,7 +43,7 @@ server.get("/health", async (req, res) => {
     }
 });
 
-// Start server
+// start server
 const startServer = async () => {
     await connectDatabase();
     server.listen(PORT, () => {

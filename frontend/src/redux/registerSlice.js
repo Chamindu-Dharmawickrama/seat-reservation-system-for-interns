@@ -22,7 +22,7 @@ const initialState = {
         registeredData: null,
         loading: false,
         error: null,
-        success: true,
+        success: false,
     },
 };
 

@@ -34,8 +34,17 @@ export const Navbar = () => {
     // destroy the session (logout)
     const destroySession = () => {
         dispatch(logout());
-        setIsLoged(false)
+        setIsLoged(false);
         navigate("/");
+    };
+
+    // handle click
+    const handleNavigate = () => {
+        if (user.role === "ADMIN") {
+            navigate("/adminDashboard");
+        } else if (user.role === "INTERN") {
+            navigate("/internDashboard");
+        }
     };
 
     return (
@@ -52,16 +61,16 @@ export const Navbar = () => {
                 </div>
 
                 <div className="hidden md:flex space-x-6 justify-center items-center">
-                    <Link
-                        to="/adminDashboard"
-                        className="text-basecolor text-letter font-semibold hover:text-gray-700"
-                    >
-                        Dashboard
-                    </Link>
                     {isLoged ? (
                         <div className="flex justify-center items-center">
-                            <div className="text-basecolor text-letter font-semibold hover:text-gray-700">
-                                {user.name}
+                            <button
+                                onClick={handleNavigate}
+                                className="text-basecolor text-letter font-semibold hover:text-gray-700 mr-5 cursor-pointer"
+                            >
+                                Dashboard
+                            </button>
+                            <div className="text-basecolor text-letter font-semibold ">
+                                {user.name} 
                             </div>
                             <div className="ml-6 ">
                                 <button
@@ -105,15 +114,17 @@ export const Navbar = () => {
 
             {isOpen && (
                 <div className="md:hidden absolute bg-white top-16 left-0 w-full bg-navbase bg-opacity-80 backdrop-blur-sm z-40 py-6 flex flex-col items-center space-y-6 shadow-md">
-                    <Link
-                        to="/adminDashboard"
-                        onClick={() => setIsOpen(false)}
-                        className="text-basecolor text-[18px] font-semibold hover:text-gray-300"
-                    >
-                        Dashboard
-                    </Link>
                     {isLoged ? (
                         <div className="flex flex-col justify-center items-center gap-7">
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    handleNavigate();
+                                }}
+                                className="text-basecolor text-[18px] font-semibold hover:text-gray-300"
+                            >
+                                Dashboard
+                            </button>
                             <div className="text-basecolor text-[17px] font-semibold hover:text-gray-700">
                                 {user.name}
                             </div>

@@ -139,7 +139,7 @@ const MyReservation = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-[18px] sm:text-xl font-bold text-gray-800 mb-1">
-                                            Seat {reservation.seatNumber}
+                                            Seat {reservation.seat.seatNumber}
                                         </h3>
                                         <p className="text-base text-gray-600 mb-1">
                                             {reservation.floor}
@@ -159,7 +159,8 @@ const MyReservation = () => {
                                         <div className="flex items-center justify-center sm:justify-start text-gray-500 px-2">
                                             <Calendar className="w-4 h-4 mr-1" />
                                             <span className="text-sm font-medium">
-                                                {reservation.date}
+                                                {reservation.date &&
+                                                    reservation.date.split("T")[0]}
                                             </span>
                                         </div>
                                     </div>

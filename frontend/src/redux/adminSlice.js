@@ -93,7 +93,7 @@ export const fetchReservations = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await api.get("/reservations");
-            return response.data;
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch reservations"
@@ -107,7 +107,7 @@ export const searchReservations = createAsyncThunk(
     "admin/searchReservations",
     async ({ searchTerm, date }, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/reservations/search", {
+            const response = await api.get("/reservations/search", {
                 params: { searchTerm, date },
             });
             return response.data;
@@ -139,8 +139,8 @@ export const fetchUsers = createAsyncThunk(
     "admin/fetchUsers",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await api.get("/admin/users");
-            return response.data;
+            const response = await api.get("/users");
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to fetch users "
@@ -364,11 +364,14 @@ const initialState = {
     seatOperationError: null,
     seatOperationSuccess: false,
 
-    // email operations
+    // allowed email operations
     emails: [],
     emailsLoading: false,
     emailsError: null,
-    emailsSuccess: null,
+    addEmailError: null,
+    addEmailSuccess:false,
+    fetchEmailsSuccess: false,
+    deleteEmailSuccess: false,
 
     // reports
     reports: [],
@@ -398,7 +401,7 @@ const adminSlice = createSlice({
         clearSuccess: (state) => {
             state.assignmentSuccess = false;
             state.seatOperationSuccess = false;
-            state.emailsSuccess = null;
+            state.addEmailSuccess = false;
         },
         resetSeatOperation: (state) => {
             state.seatOperationLoading = false;
@@ -413,7 +416,7 @@ const adminSlice = createSlice({
         resetEmailOperation: (state) => {
             state.emailsLoading = false;
             state.emailsError = null;
-            state.emailsSuccess = null;
+            state.addEmailSuccess = false;
         },
         resetDeleteOperation: (state) => {
             state.deletingSeat = false;
@@ -652,30 +655,30 @@ const adminSlice = createSlice({
             })
             .addCase(fetchAllRegisteredEmails.fulfilled, (state, action) => {
                 state.emailsLoading = false;
-                state.emailsSuccess = true;
+                state.fetchEmailsSuccess = true;
                 state.emails = action.payload;
             })
             .addCase(fetchAllRegisteredEmails.rejected, (state, action) => {
                 state.emailsLoading = false;
                 state.emailsError = action.payload;
-                state.emailsSuccess = null;
+                state.fetchEmailsSuccess = false;
             })
 
             // add Email
             .addCase(registerNewEmail.pending, (state) => {
                 state.emailsLoading = true;
-                state.emailsError = null;
-                state.emailsSuccess = null;
+                state.addEmailError = null;
+                state.addEmailSuccess = false;
             })
             .addCase(registerNewEmail.fulfilled, (state, action) => {
                 state.emailsLoading = false;
-                state.emailsSuccess = true;
+                state.addEmailSuccess = true;
                 state.emails.push(action.payload);
             })
             .addCase(registerNewEmail.rejected, (state, action) => {
                 state.emailsLoading = false;
-                state.emailsError = action.payload;
-                state.emailsSuccess = null;
+                state.addEmailError = action.payload;
+                state.addEmailSuccess = false;
             })
 
             // delete email
@@ -685,7 +688,7 @@ const adminSlice = createSlice({
             })
             .addCase(deleteRegisteredEmail.fulfilled, (state, action) => {
                 state.emailsLoading = false;
-                state.emailsSuccess = true;
+                state.deleteEmailSuccess = true;
                 state.emails = state.emails.filter(
                     (email) => email.id !== action.payload.id
                 );
@@ -693,7 +696,7 @@ const adminSlice = createSlice({
             .addCase(deleteRegisteredEmail.rejected, (state, action) => {
                 state.emailsLoading = false;
                 state.emailsError = action.payload;
-                state.emailsSuccess = false;
+                state.deleteEmailSuccess = false;
             })
 
             // reports

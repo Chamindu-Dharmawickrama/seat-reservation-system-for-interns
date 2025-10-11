@@ -4,7 +4,7 @@ import {
     clearErrors,
     fetchAllRegisteredEmails,
     registerNewEmail,
-    resetEmailOperation
+    resetEmailOperation,
 } from "../../../redux/adminSlice";
 import { AlertCircle, X, Loader2, Mail } from "lucide-react";
 import { ToastContainer, useToast } from "../../../components/Toast";
@@ -15,15 +15,23 @@ const RegisteredEmails = () => {
     const { toasts, removeToast, showSuccess, showError, showInfo } =
         useToast();
 
+    const {
+        emails,
+        emailsLoading,
+        emailsError,
+        fetchEmailsSuccess,
+        addEmailSuccess,
+        addEmailError,
+    } = useSelector((state) => state.admin);
+
+    console.log("Fetch Email success", fetchEmailsSuccess);
+    console.log("Add Email success", addEmailSuccess);
+
     useEffect(() => {
         dispatch(fetchAllRegisteredEmails());
-    }, [dispatch]);
+    }, [dispatch,addEmailSuccess]);
 
-    const { emails, emailsLoading, emailsError, emailsSuccess } = useSelector(
-        (state) => state.admin
-    );
-
-    console.log("emials", emails)
+    console.log("emials", emails);
 
     const [showRegisterEmailModal, setShowRegisterEmailModal] = useState(false);
 
@@ -34,23 +42,20 @@ const RegisteredEmails = () => {
 
     // Handle email operation success
     useEffect(() => {
-        if (emailsSuccess === true) {
+        if (addEmailSuccess === true) {
             showSuccess("Email added successfully!");
             setShowRegisterEmailModal(false);
             resetEmailForm();
             dispatch(resetEmailOperation());
-        } else if (emailsSuccess === false) {
+        }
+    }, [addEmailSuccess, dispatch]);
+
+    useEffect(() => {
+        if (addEmailError) {
             showError("Failed to add email.");
             dispatch(resetEmailOperation());
         }
-    }, [emailsSuccess, dispatch, showSuccess, showError]);
-
-    //fix this
-    // useEffect(() => {
-    //     if (emailsError) {
-    //         showError(emailsError);
-    //     }
-    // }, []);
+    }, [addEmailError, dispatch]);
 
     const resetEmailForm = () => {
         setEmailForm({
@@ -162,8 +167,11 @@ const RegisteredEmails = () => {
                         ) : (
                             <tbody>
                                 {emails.map((email) => (
-                                    <tr key={email.id}className="hover:bg-gray-100 transition">
-                                        <td cl assName="py-3 px-4">
+                                    <tr
+                                        key={email.id}
+                                        className="hover:bg-gray-100 transition  border-b border-gray-300"
+                                    >
+                                        <td className="py-3 px-6 ">
                                             {email.traineeId}
                                         </td>
                                         <td className="py-3 px-4">

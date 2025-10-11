@@ -1,0 +1,123 @@
+
+// confirmation HTML
+export const bookingTemplate = (data) => {
+    const {
+        username,
+        bookingId,
+        seatNumber,
+        date,
+        time,
+        location,
+        createdAt,
+        viewUrl,
+        year,
+    } = data;
+
+    return `<!doctype html>
+        <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width,initial-scale=1" />
+          <title>Booking Confirmation</title>
+          <style>
+          /* Basic responsive rules (accepted by many clients) */
+          body { margin:0; padding:0; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; background-color:#f4f6f8; }
+          table { border-collapse:collapse; }
+          img { border:0; line-height:100%; text-decoration:none; -ms-interpolation-mode:bicubic; }
+          .container { width:100%; max-width:640px; margin:0 auto; }
+          .card { background:#ffffff; border-radius:10px; padding:24px; box-shadow:0 2px 6px rgba(16,24,40,0.06); }
+          h1 { margin:0 0 8px 0; font-size:22px; color:#0f172a; font-family:Arial, Helvetica, sans-serif; }
+          p { margin:8px 0 16px 0; color:#374151; font-family:Arial, Helvetica, sans-serif; line-height:1.4; }
+          .muted { color:#6b7280; font-size:13px; }
+          .info-table { width:100%; margin:16px 0 22px 0; font-family:Arial, Helvetica, sans-serif; }
+          .info-table td { padding:8px 0; vertical-align:top; border-bottom:1px dashed #e6e9ef; }
+          .label { width:28%; color:#6b7280; font-size:13px; }
+          .value { color:#0f172a; font-weight:600; font-size:14px; }
+          .btn { display:inline-block; padding:12px 20px; border-radius:8px; text-decoration:none; font-weight:600; font-family:Arial, Helvetica, sans-serif; }
+          .btn-primary { background:#075985; color:#ffffff !important; }
+          .footer { margin-top:18px; font-size:12px; color:#9ca3af; font-family:Arial, Helvetica, sans-serif; }
+          @media (max-width:480px){ .card { padding:16px; } .label { display:block; width:100%; font-size:13px; } .value { display:block; width:100%; margin-top:6px; } }
+          </style>
+        </head>
+        <body>
+          <!-- Plain-text fallback for clients that show text first -->
+          <span style="display:none;font-size:1px;color:#f4f6f8;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+          Booking confirmed — ${bookingId} for ${username} on ${date} at ${time}.
+          </span>
+
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:32px 16px;">
+          <tr>
+            <td align="center">
+            <table role="presentation" class="container" cellpadding="0" cellspacing="0">
+              <tr>
+              <td class="card">
+                <!-- Header -->
+                <table role="presentation" width="100%">
+                <tr>
+                  <td style="padding-bottom:12px;">
+                  <!-- Optional logo -->
+                  <img src="logo.png" alt="Company logo" width="120" style="display:block; margin-bottom:18px;">
+                  <h1>Booking Confirmed</h1>
+                  <p class="muted">Thanks ${username} — your booking is confirmed. See the details below.</p>
+                  </td>
+                </tr>
+                </table>
+
+                <!-- Booking details -->
+                <table role="presentation" class="info-table">
+                <tr>
+                  <td class="label">Booking ID</td>
+                  <td class="value">${bookingId}</td>
+                </tr>
+                <tr>
+                  <td class="label">Seat</td>
+                  <td class="value">${seatNumber}</td>
+                </tr>
+                <tr>
+                  <td class="label">Date</td>
+                  <td class="value">${date}</td>
+                </tr>
+                <tr>
+                  <td class="label">Time</td>
+                  <td class="value">${time}</td>
+                </tr>
+                <tr>
+                  <td class="label">Location</td>
+                  <td class="value">${location}</td>
+                </tr>
+                </table>
+
+                <!-- CTA -->
+                <table role="presentation" width="100%" style="margin-top:6px;">
+                <tr>
+                  <td align="left">
+                  <a href="${viewUrl}" class="btn btn-primary" target="_blank" rel="noopener" style="color:#ffffff !important;">View Booking</a>
+                  </td>
+                  <td align="right" class="muted" style="font-size:13px;">
+                  <div>Created: ${createdAt}</div>
+                  </td>
+                </tr>
+                </table>
+
+                <!-- Footer -->
+                <div class="footer">
+                <p style="margin:12px 0 0 0;">If you need to change or cancel your booking, reply to this email or visit your account.</p>
+                <p style="margin:6px 0 0 0;">&copy; ${year} Your Company Name. All rights reserved.</p>
+                </div>
+              </td>
+              </tr>
+
+              <!-- Small legal / support row -->
+              <tr>
+              <td align="center" style="padding-top:12px; font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#9ca3af;">
+                Need help? <a href="mailto:seatrrservations@gmail.com" style="color:#075985; text-decoration:none;">Contact Support</a>
+              </td>
+              </tr>
+            </table>
+            </td>
+          </tr>
+          </table>
+        </body>
+        </html>
+        `;
+};

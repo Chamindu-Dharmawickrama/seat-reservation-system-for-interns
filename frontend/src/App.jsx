@@ -152,7 +152,7 @@ const App = () => {
             </Route>
 
             {/* Intern routes */}
-            <Route path="internDashboard" element={<InternDashboard />}>
+            <Route path="/internDashboard" element={<InternDashboard />}>
                 <Route
                     index
                     element={

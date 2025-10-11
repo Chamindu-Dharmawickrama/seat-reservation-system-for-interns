@@ -47,43 +47,6 @@ const ManageReservations = () => {
     console.log("fetching reservation error", fetchError);
     console.log("Error delete reservation ", deleteReservationError);
 
-    // Mock data
-    // const reservations = [
-    //     {
-    //         id: 1,
-    //         seatNumber: "A01",
-    //         internName: "John Doe",
-    //         internId: "INT001",
-    //         date: "2025-08-28",
-    //         time: "09:00 AM - 05:00 PM",
-    //         status: "active",
-    //         floor: "1st Floor",
-    //         purpose: "Project Work",
-    //     },
-    //     {
-    //         id: 2,
-    //         seatNumber: "B02",
-    //         internName: "Jane Smith",
-    //         internId: "INT002",
-    //         date: "2025-08-29",
-    //         time: "09:00 AM - 01:00 PM",
-    //         status: "upcoming",
-    //         floor: "2nd Floor",
-    //         purpose: "Meeting Preparation",
-    //     },
-    //     {
-    //         id: 3,
-    //         seatNumber: "A03",
-    //         internName: "Mike Johnson",
-    //         internId: "INT003",
-    //         date: "2025-08-25",
-    //         time: "01:00 PM - 05:00 PM",
-    //         status: "completed",
-    //         floor: "1st Floor",
-    //         purpose: "Training Session",
-    //     },
-    // ];
-
     // // fetch the all reservations
     useEffect(() => {
         try {
@@ -133,12 +96,13 @@ const ManageReservations = () => {
         dispatch,
     ]);
 
-    //search
-    useEffect(() => {
-        dispatch(searchReservations({ searchTerm, selectedDate }));
-    }, [searchTerm, selectedDate, dispatch]);
+    // //search
+    // useEffect(() => {
+    //     dispatch(searchReservations({ searchTerm, selectedDate }));
+    // }, [searchTerm, selectedDate, dispatch]);
 
     console.log("date", selectedDate);
+    console.log("All reservations", reservations)
 
     return (
         <div className="p-6 lg:p-8">
@@ -239,10 +203,10 @@ const ManageReservations = () => {
                                         </div>
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-800 mb-1">
-                                                Seat {reservation.seatNumber}
+                                                Seat {reservation.seat.seatNumber}
                                             </h3>
                                             <p className="text-base text-gray-600 mb-1">
-                                                {reservation.floor}
+                                                {reservation.seat.floor}
                                             </p>
                                             <div className="flex items-center text-gray-500">
                                                 <Calendar className="w-4 h-4 mr-1" />
@@ -253,10 +217,10 @@ const ManageReservations = () => {
                                         </div>
                                         <div>
                                             <h4 className="text-lg font-semibold text-gray-800 mb-1">
-                                                {reservation.internName}
+                                                {reservation.user.firstName}
                                             </h4>
                                             <p className="text-sm text-gray-600 mb-1">
-                                                ID: {reservation.internId}
+                                                ID: {reservation.user.internId}
                                             </p>
                                             <p className="text-sm text-gray-500">
                                                 {reservation.purpose}

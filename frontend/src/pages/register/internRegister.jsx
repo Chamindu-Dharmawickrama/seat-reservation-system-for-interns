@@ -388,6 +388,14 @@ const InternRegister = () => {
                                     ) : null}
                                     Create Account
                                 </button>
+
+                                {success && (
+                                    <div className="mt-6 text-center">
+                                        <p className="text-green-700 text-lg font-semibold">
+                                            Registration successful! Please <a href="/login" className="underline text-[#0057A8]">login</a>.
+                                        </p>
+                                    </div>
+                                )}
                             </form>
                         </div>
                     </div>

@@ -25,7 +25,7 @@ export const makeReservation = createAsyncThunk(
                 "/reservations/newReservation",
                 reservation
             );
-            return response.data;
+            return response.data.data;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || "Failed to add new reservation"
@@ -70,6 +70,9 @@ const reservationSlice = createSlice({
             state.reservationError = null;
             state.deleteReservationError = null;
         },
+        resetReservationOperation :(state)=>{
+            state.newReservationSuccess = false;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -92,7 +95,7 @@ const reservationSlice = createSlice({
             .addCase(makeReservation.fulfilled, (state, action) => {
                 state.reservationLoading = false;
                 state.newReservationSuccess = true;
-                state.reservations = action.payload;
+                //state.reservations=action.payload;
             })
             .addCase(makeReservation.rejected, (state, action) => {
                 state.reservationLoading = false;
@@ -106,7 +109,7 @@ const reservationSlice = createSlice({
             .addCase(deleteReservation.fulfilled, (state, action) => {
                 state.deleteReservationLoading = false;
                 state.deleteReservationSuccess = true;
-                state.reservations = action.payload;
+                //state.reservations = action.payload;
             })
             .addCase(deleteReservation.rejected, (state, action) => {
                 state.deleteReservationLoading = false;
@@ -116,5 +119,5 @@ const reservationSlice = createSlice({
     },
 });
 
-export const { clearErrors } = reservationSlice.actions;
+export const { clearErrors ,resetReservationOperation} = reservationSlice.actions;
 export default reservationSlice.reducer;

@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Search, Calendar, MapPin, Plus, Clock } from "lucide-react";
+import { Search, Calendar, MapPin, Plus, Clock, Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchSeats, searchSeatByTerm } from "../../../redux/seatSlice";
 import useDebounce from "../../../hooks/useDebounce";
-import { clearErrors, makeReservation } from "../../../redux/reservationSlice";
+import {
+    clearErrors,
+    makeReservation,
+    resetReservationOperation,
+} from "../../../redux/reservationSlice";
 import { ToastContainer, useToast } from "../../../components/Toast";
 
 const AvailableSeat = () => {
@@ -102,16 +106,19 @@ const AvailableSeat = () => {
             setShowBookingModal(false);
             setSelectedSeat(null);
             showSuccess("Reservation created successfully");
+            dispatch(resetReservationOperation());
         }
-    }, [newReservationSuccess]);
+    }, [newReservationSuccess, dispatch]);
 
     useEffect(() => {
         if (reservationError) {
             showError("Reservation Failed");
         }
-    }, [reservationError]);
+    }, [reservationError, dispatch]);
 
     console.log(bookingForm);
+
+    console.log("booking mode Open ", showBookingModal);
 
     return (
         <div className="p-6 lg:p-8">
@@ -344,14 +351,17 @@ const AvailableSeat = () => {
                                     setSelectedSeat(null);
                                     dispatch(clearErrors());
                                 }}
-                                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base"
+                                className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-semibold text-base cursor-pointer"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleBookingConfirm}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg"
+                                className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-[#0057A8] to-[#00B5E2] text-white rounded-lg hover:from-[#004080] hover:to-[#0099CC] transition-all duration-200 font-semibold text-base shadow-md hover:shadow-lg cursor-pointer"
                             >
+                                {reservationLoading && (
+                                    <Loader2 className="w-5 h-5 animate-spin mr-3 mt-[0.5]" />
+                                )}
                                 Confirm Booking
                             </button>
                         </div>

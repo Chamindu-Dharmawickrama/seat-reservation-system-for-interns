@@ -3,38 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUsers } from "../../../redux/adminSlice";
 
 const AllUsers = () => {
-    // // dummy data
-    // const users = [
-    //     {
-    //         id: 3116,
-    //         name: "Chamindu Laksara",
-    //         email: "cham@gmail.com",
-    //         phone: "0719895344",
-    //         department: "IT",
-    //         university: "IIT",
-    //     },
-    //     {
-    //         id: 3117,
-    //         name: "Nimal Perera",
-    //         email: "nimal@gmail.com",
-    //         phone: "0719895345",
-    //         department: "Business",
-    //         university: "UOC",
-    //     },
-    //     {
-    //         id: 3118,
-    //         name: "Kamal Perera",
-    //         email: "kamal@gmail.com",
-    //         phone: "0719895346",
-    //         department: "Engineering",
-    //         university: "UOM",
-    //     },
-    // ];
-
-    // const usersLoading = false;
-    // const usersError = false;
-
-    const dispatch = useDispatch();
+   const dispatch = useDispatch();
 
     useEffect(() => {
         dispatch(fetchUsers());
@@ -43,6 +12,8 @@ const AllUsers = () => {
     const { users, usersLoading, usersError } = useSelector(
         (state) => state.admin
     );
+
+    console.log(users)
 
     return (
         <div className="min-h-screen  py-8 px-4">
@@ -105,7 +76,7 @@ const AllUsers = () => {
                                 Trainee ID
                             </span>
                             <span className="text-lg font-semibold text-gray-900">
-                                {user.id}
+                                {user.internId}
                             </span>
                         </div>
 
@@ -114,7 +85,7 @@ const AllUsers = () => {
                                 Full Name
                             </span>
                             <span className="text-lg font-semibold text-gray-900">
-                                {user.name}
+                                {user.firstName +" " + user.lastName}
                             </span>
                         </div>
 
