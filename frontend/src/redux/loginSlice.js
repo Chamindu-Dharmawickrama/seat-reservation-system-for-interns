@@ -20,11 +20,14 @@ export const loginFunction = createAsyncThunk(
     }
 );
 
+const token = localStorage.getItem("token");
+
 const initialState = {
-    user: [],
+    user: token ? JSON.parse(atob(token.split(".")[1])) : [],
     loginError: null,
     loginLoading: false,
-    role: null,
+    role: token ? JSON.parse(atob(token.split(".")[1])).role : null,
+    isLogingSuccess: !!token,
 };
 
 const loginSlice = createSlice({
@@ -39,6 +42,7 @@ const loginSlice = createSlice({
             state.role = null;
             state.loginError = null;
             state.loginLoading = false;
+            state.isLogingSuccess = false;
             localStorage.removeItem("token");
         },
     },
@@ -51,11 +55,13 @@ const loginSlice = createSlice({
             })
             .addCase(loginFunction.fulfilled, (state, action) => {
                 state.loginLoading = false;
-                state.user = action.payload; //the login output
-                console.log(action.payload.data.token);
+                state.isLogingSuccess = true;
+                const token = action.payload.data.token;
+                // Decode the token to get user information
+                state.user = JSON.parse(atob(token.split(".")[1]));
                 state.role = action.payload.data.user.role;
                 // token save to the local storaage
-                localStorage.setItem("token", action.payload.data.token);
+                localStorage.setItem("token", token);
             })
             .addCase(loginFunction.rejected, (state, action) => {
                 state.loginLoading = false;

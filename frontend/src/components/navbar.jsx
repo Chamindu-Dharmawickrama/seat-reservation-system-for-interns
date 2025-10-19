@@ -2,47 +2,31 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logo from "../assets/logo.png";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/loginSlice";
 
 export const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [isLoged, setIsLoged] = useState(false);
-    const [user, setUser] = useState({
-        name: "",
-        role: "",
-    });
     const navigate = useNavigate();
 
-    // get user details
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            setIsLoged(true);
-            const name = JSON.parse(atob(token.split(".")[1]))?.firstName;
-            const userRole = JSON.parse(atob(token.split(".")[1]))?.role;
-            setUser({
-                name,
-                role: userRole,
-            });
-            console.log(name, userRole);
-        }
-    }, []);
+    const { user, role, isLogingSuccess } = useSelector((state) => state.login);
+
+    console.log("payload" , user)
 
     const dispatch = useDispatch();
 
     // destroy the session (logout)
     const destroySession = () => {
         dispatch(logout());
-        setIsLoged(false);
+        //isLogingSuccess(false);
         navigate("/");
     };
 
     // handle click
     const handleNavigate = () => {
-        if (user.role === "ADMIN") {
+        if (role === "ADMIN") {
             navigate("/adminDashboard");
-        } else if (user.role === "INTERN") {
+        } else if (role === "INTERN") {
             navigate("/internDashboard");
         }
     };
@@ -61,7 +45,7 @@ export const Navbar = () => {
                 </div>
 
                 <div className="hidden md:flex space-x-6 justify-center items-center">
-                    {isLoged ? (
+                    {isLogingSuccess ? (
                         <div className="flex justify-center items-center">
                             <button
                                 onClick={handleNavigate}
@@ -70,7 +54,7 @@ export const Navbar = () => {
                                 Dashboard
                             </button>
                             <div className="text-basecolor text-letter font-semibold ">
-                                {user.name} 
+                                {user.firstName}
                             </div>
                             <div className="ml-6 ">
                                 <button
@@ -114,7 +98,7 @@ export const Navbar = () => {
 
             {isOpen && (
                 <div className="md:hidden absolute bg-white top-16 left-0 w-full bg-navbase bg-opacity-80 backdrop-blur-sm z-40 py-6 flex flex-col items-center space-y-6 shadow-md">
-                    {isLoged ? (
+                    {isLogingSuccess ? (
                         <div className="flex flex-col justify-center items-center gap-7">
                             <button
                                 onClick={() => {
@@ -126,7 +110,7 @@ export const Navbar = () => {
                                 Dashboard
                             </button>
                             <div className="text-basecolor text-[17px] font-semibold hover:text-gray-700">
-                                {user.name}
+                                {user.firstName}
                             </div>
                             <button
                                 onClick={destroySession}
