@@ -35,7 +35,7 @@ const Login = () => {
 
     // after log according to the user redirect relevant url
     useEffect(() => {
-        if (!role) return;
+        //if (!role) return;
         if (role === "ADMIN") {
             navigate("/adminDashboard");
         } else if (role === "INTERN") {
@@ -45,7 +45,11 @@ const Login = () => {
 
     //console.log("user", role)
 
-    const handleLoginSuccees = () => {};
+    // useEffect(()=>{
+
+    // },[loginError])
+
+    console.log(loginError)
 
     return (
         <Layouts>

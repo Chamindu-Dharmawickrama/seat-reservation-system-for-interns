@@ -4,6 +4,7 @@ import { connectDatabase } from "./src/config/db.js";
 import DB from "./src/config/db.js";
 import rootRouter from "./src/routes/rootRouter.js";
 import cors from "cors";
+import { globalLimiter } from "./src/middleware/rateLimitMiddleware.js";
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ server.use(
         credentials: true,
     })
 );
+
+server.use(globalLimiter);
 
 // use rootRouter
 server.use("/api", rootRouter);
